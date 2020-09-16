@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="以下内容是对我自己提出的几个问题的回答：  中台的相关概念 中台与微服务的关系 仅代表个人的，从入职以来对公司业务的理解、架构的不断学习">
+<meta name="keywords" content="中台 微服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我在做什么——什么是中台？">
+<meta property="og:url" content="http://ajsonx.github.io/2020/02/06/middleground/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="以下内容是对我自己提出的几个问题的回答：  中台的相关概念 中台与微服务的关系 仅代表个人的，从入职以来对公司业务的理解、架构的不断学习">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200206/vertical_split.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200206/horizontal_split.png">
+<meta property="og:updated_time" content="2020-02-06T08:10:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="我在做什么——什么是中台？">
+<meta name="twitter:description" content="以下内容是对我自己提出的几个问题的回答：  中台的相关概念 中台与微服务的关系 仅代表个人的，从入职以来对公司业务的理解、架构的不断学习">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200206/vertical_split.png">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/02/06/middleground/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>我在做什么——什么是中台？ | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/02/06/middleground/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          我在做什么——什么是中台？
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-02-06 16:10:30" itemprop="dateCreated datePublished" datetime="2020-02-06T16:10:30+08:00">2020-02-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/架构/" itemprop="url" rel="index"><span itemprop="name">架构</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/02/06/middleground/" class="post-meta-item leancloud_visitors" data-flag-title="我在做什么——什么是中台？" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/02/06/middleground/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/06/middleground/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>以下内容是对我自己提出的几个问题的回答：</p>
+<ol>
+<li>中台的相关概念</li>
+<li>中台与微服务的关系</li>
+<li>仅代表个人的，从入职以来对公司业务的理解、架构的不断学习</li>
+</ol>
+<a id="more"></a>
+<hr>
+<p>写在开头</p>
+<p>我明白，思考中台，微服务以及架构。对我们这种初级程序员没有什么意义，学而无用。脑子里总是不停的出现类似的话，”要多学点基础知识，linux、https、tcp、计算机原理….”。思考这些狗屁中台的确是80%的无意义。同样我也会因为看了一本烂书而愤愤，浪费了我的时间。但我不能接受一知半解，潦草的对待，抛在一边不管。几年前读完柴静的《看见》，文中写道一段话我感触颇深，我一直记着。原文是这样的：</p>
+<blockquote>
+<p>我采访过一个与女儿有严重隔阂的母亲，她二十几年后反思说：“不论是谁，都不要对别人说‘应该’这两个字”。 “应该”，是一个人认识生活的模式，一旦形成，很难摆脱，对人对事的看法往往是只是一再加强这个模式。 要想完成客观的采访，就要尽力削除这个“应该”，<strong>只陈述，只发问，不评判，唯有如此，才能了解更多事实</strong> </p>
+</blockquote>
+<p>By the way, 对待有争议的话题时我尽力保持不发声，网络暴力越演愈烈的今天，需要学会不说话。</p>
+<p>扯远了，回到学习这个话题，把想做的做完就行了。生活与工作的意义在于不断刷新你认知的上限，或者是下限。</p>
+<h1 id="我在做什么——什么是中台？"><a href="#我在做什么——什么是中台？" class="headerlink" title="我在做什么——什么是中台？"></a>我在做什么——什么是中台？</h1><p>从入职开始的那天起，部门的架构师和产品经理循循善诱的告诉我：”我们在做中台的项目呀～作为餐饮业最重要的就是菜品啦～这就是我们的数据源“。</p>
+<p>那天，我上网搜索了非常多关于中台的文章，一篇篇的看下去，接连不断的Infos OR Knowledge冲击我的大脑。无上的荣誉感净化我的心灵（跳槽可以拿去吹牛了～）</p>
+<p>但有一天，随着我真正的开始反思公司的架构，思考中台存在的作用、必要性。我的脑子里不断的出现了疑问。</p>
+<p>如果你也对此感兴趣，请往下看：</p>
+<h1 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q &amp; A"></a>Q &amp; A</h1><h2 id="什么是数字化建设？"><a href="#什么是数字化建设？" class="headerlink" title="什么是数字化建设？"></a>什么是数字化建设？</h2><p>在介绍中台之前我们先来看看数字化这个概念，什么是数字化？与以前的信息化建设有何不同？</p>
+<p>数据的阶段：</p>
+<h3 id="阶段一：数据不被存储"><a href="#阶段一：数据不被存储" class="headerlink" title="阶段一：数据不被存储"></a>阶段一：数据不被存储</h3><p>软件只为了解决一次性的问题。比如计算机，画图工具，扫雷等等</p>
+<h3 id="阶段二：少量的数据被存储和查询"><a href="#阶段二：少量的数据被存储和查询" class="headerlink" title="阶段二：少量的数据被存储和查询"></a>阶段二：少量的数据被存储和查询</h3><p>应对业务上的需求，软件从解决单点问题的工具演进到处理一类业务问题，从而有了多个功能模块，这时候有了数据的产生。类比扫雷，添加了用户名、排行榜、通关时间、游戏次数、玩家点击次数等等</p>
+<h3 id="阶段三：数据仓库的出现，数据被大量存储"><a href="#阶段三：数据仓库的出现，数据被大量存储" class="headerlink" title="阶段三：数据仓库的出现，数据被大量存储"></a>阶段三：数据仓库的出现，数据被大量存储</h3><p>这个阶段是当数据规模大到一定量级，软件应对更多的需求作出的改变。继续拿扫雷这个游戏举例：当我玩了100万次扫雷之后，有了1PB的扫雷对战记录、通关时间等等数据。这时候就会有“平均通关时间”，“通关率是多少”，“开局第一个次点击的位置分布在哪”等等更加复杂的需求，软件不停的变更才能更好满足用户的需求。然而这些信息很难单纯的从业务数据库中查询出来，业务数据库只是为了完成记录，并不是为了分析而记录。因此就来到了阶段四</p>
+<h3 id="阶段四：从数据中挖掘价值"><a href="#阶段四：从数据中挖掘价值" class="headerlink" title="阶段四：从数据中挖掘价值"></a>阶段四：从数据中挖掘价值</h3><p>业务从数据中发现市场的规律，洞察客户的兴趣，产生一些人们不知道的信息。这个阶段在市场营销、生产调度等影响因子较多，动态性较大的业务领域，数据的重要性愈加凸显。（扫雷搞个彩蛋？通关送个彩票、设立个世界最快通关纪录、再打打广告…）</p>
+<h3 id="阶段五：数据成为企业核心资产"><a href="#阶段五：数据成为企业核心资产" class="headerlink" title="阶段五：数据成为企业核心资产"></a>阶段五：数据成为企业核心资产</h3><p>数据成为了企业的核心资产，所有的业务都被数据化。数据能够产生价值，数据无比重要。</p>
+<blockquote>
+<p>总结一下，我们会发现在信息化时代，数据是流程的副产品，流程是预先设计好的，然后在设计好的流程中产生了数据</p>
+<p>在数字化时代，业务流程应用软件（业务流程的显形载体）会随着市场的变化快速而不断动态迭代甚至消亡，而数据成为了物理世界映射到数字化世界的原子，数据思维（”Data First” ）成为战略核心之一。</p>
+</blockquote>
+<h2 id="什么是数据中台（CDP）？"><a href="#什么是数据中台（CDP）？" class="headerlink" title="什么是数据中台（CDP）？"></a>什么是数据中台（CDP）？</h2><p>既然中台这概念火了起来，那就有“前台”，“后台”吧。我们把它与企业中实际应用场景一一对应，这样就能对中台有个大概的理解。我用京东作为例子：</p>
+<ul>
+<li>前台：京东金融、京东到家（线上买菜）、京东拍拍（二手）、京东（自营商品）</li>
+<li>后台：内部OA系统、ERP、CRM、财务系统等等</li>
+</ul>
+<p>这下就很好理解吧。对于传统信息化的企业来说，后台系统都是过于繁重的。应对前台业务的需求不能及时响应。甚至需要大改内部系统。中台就是介于这两个之间的缓冲层。将复杂的后台功能解耦，前台的通用模块复用。就是一个独立的数据中台。</p>
+<p>正因此，我们可以从业务垂直划分出 用户中心、商品中心、交易中心等等作为中台服务之一。中台的意义在于建立通用化服务，链接前台和后台，避免重复造轮子，使业务可持续发展。前期实现核心功能，完成业务接入，中期灵活满足个性化需求、提升中台数据表现，以便让业务大量接入。后期则是组件化、新业务能灵活接入</p>
+<h2 id="中台和微服务的关系？"><a href="#中台和微服务的关系？" class="headerlink" title="中台和微服务的关系？"></a>中台和微服务的关系？</h2><h3 id="微服务"><a href="#微服务" class="headerlink" title="微服务"></a>微服务</h3><p>伴随中台火起来的微服务概念究竟是什么呢？</p>
+<p>微服务是<a href="https://zh.wikipedia.org/wiki/Martin_Fowler" target="_blank" rel="noopener">Martin Fowler</a> 与 <a href="https://zh.wikipedia.org/w/index.php?title=James_Lewis&action=edit&redlink=1" target="_blank" rel="noopener">James Lewis</a> 早在2004年共同提出的概念，在2014年正式命名微服务。根据业务功能设施，全自动的方式部署，与其他服务使用HTTP API通信，服务可以用不同的编程语言与数据库等组件实现。</p>
+<p>企业中需要持续交付、快速迭代的业务、系统性能高可用（不适用于证券系统等性能要求苛刻的场景）、数据一致性层面可以使用微服务架构来拆分业务单元。常见的架构拆分方法一般有两种： </p>
+<p>功能单元垂直拆分，如图（图片无法显示请挂vpn）：</p>
+<p>这种将商品、用户、交易这些模块按照业务逻辑进行拆分，但业务有交集</p>
+<p><img src="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200206/vertical_split.png" alt="功能单元垂直拆分"></p>
+<p>水平拆分，如图（图片无法显示请挂vpn）：</p>
+<ul>
+<li>网关层Gateway：过滤器、路由转发</li>
+<li>业务逻辑层：RPC或者是Restful的形式去调用数据访问层，做业务逻辑处理的一些工作</li>
+<li>数据访问层：CURD等一些数据交互的工作</li>
+<li>DB：关系非关系型数据库</li>
+<li>独立于这些之外的配置中心（Apollo）， 注册中心（CP模型-Zookeeper，AP-Erukal）</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200206/horizontal_split.png" alt="水平拆分"></p>
+<h3 id="常见架构模式"><a href="#常见架构模式" class="headerlink" title="常见架构模式"></a>常见架构模式</h3><ul>
+<li><p>链式架构模式（交易系统，业务单一、下单减库存）</p>
+</li>
+<li><p>聚合器架构模式（聚合各个微服务）</p>
+</li>
+<li><p>数据共享架构模式（读写分离、数据量小的DB可以共享一个DB实例）</p>
+</li>
+<li><p>异步消息架构模式（MQ转发请求）</p>
+</li>
+</ul>
+<p><strong>由此可见，微服务只是中台的一种解决方案，中台真正需要的不一定是微服务架构。微服务架构能很好解决引入中台的问题，而微服务带来的问题，又是否能很好的解决呢？</strong></p>
+<h2 id="Where-are-we-？"><a href="#Where-are-we-？" class="headerlink" title="Where are we ？"></a>Where are we ？</h2><p>如果对比理想化的中台系统来说，我们正在路上——目前只是建设好了“数据仓库”，可以持续接入业务中（提供对大数据分析的数据、小程序的数据接口、POS端点餐、ERP系统的物料成本等、财务系统的税率法人信息等等）。<br>我们在现阶段上可以针对订单数据、用户数据这两块做交易中台、用户中台以此完备中台。但所投入的人力与成本，是否值得回报？<br>中台真的值得做吗？引入中台又将带来什么问题？由微服务架构带来的维护成本真的承受得起吗？<br>这些问题值得我们去思考，道路是曲折的。一名好的架构师，我觉得最重要的是能在技术与成本之间平衡，为公司找到可持续发展的架构。既不拒绝旧技术，也不盲目追赶新技术。这样在浪潮退去之后，留给企业的才是真正的数据资产，数据价值。</p>
+<blockquote>
+<p>半个月前，36kr报道，云徙科技外包茅台集团的项目成了中台概念下的第一个牺牲品。一份包治百病的PPT导致悲剧的发生。人们总是过于理想化，却没有看到他背后的缺陷。</p>
+</blockquote>
+<p>on the way…</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ul>
+<li><a href="https://pan.baidu.com/s/11MrqLFamQIS0-pMy4PUPdg" target="_blank" rel="noopener">孙玄-百万架构师公开课</a></li>
+<li><a href="https://www.zhihu.com/question/365139319" target="_blank" rel="noopener">知乎-数据中台是什么？</a></li>
+<li><a href="https://www.zhihu.com/question/65502802" target="_blank" rel="noopener">知乎-什么是微服务架构</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/02/06/middleground/" title="我在做什么——什么是中台？">http://ajsonx.github.io/2020/02/06/middleground/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/中台-微服务/" rel="tag"># 中台 微服务</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/09/attention1/" rel="prev" title="杂七杂八">
+      <i class="fa fa-chevron-left"></i> 杂七杂八
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/02/15/mysql-grouping-sorting/" rel="next" title="MySQL分组排序引发的问题">
+      MySQL分组排序引发的问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#我在做什么——什么是中台？"><span class="nav-number">1.</span> <span class="nav-text">我在做什么——什么是中台？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Q-amp-A"><span class="nav-number">2.</span> <span class="nav-text">Q &amp; A</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是数字化建设？"><span class="nav-number">2.1.</span> <span class="nav-text">什么是数字化建设？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#阶段一：数据不被存储"><span class="nav-number">2.1.1.</span> <span class="nav-text">阶段一：数据不被存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阶段二：少量的数据被存储和查询"><span class="nav-number">2.1.2.</span> <span class="nav-text">阶段二：少量的数据被存储和查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阶段三：数据仓库的出现，数据被大量存储"><span class="nav-number">2.1.3.</span> <span class="nav-text">阶段三：数据仓库的出现，数据被大量存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阶段四：从数据中挖掘价值"><span class="nav-number">2.1.4.</span> <span class="nav-text">阶段四：从数据中挖掘价值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阶段五：数据成为企业核心资产"><span class="nav-number">2.1.5.</span> <span class="nav-text">阶段五：数据成为企业核心资产</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是数据中台（CDP）？"><span class="nav-number">2.2.</span> <span class="nav-text">什么是数据中台（CDP）？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#中台和微服务的关系？"><span class="nav-number">2.3.</span> <span class="nav-text">中台和微服务的关系？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#微服务"><span class="nav-number">2.3.1.</span> <span class="nav-text">微服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见架构模式"><span class="nav-number">2.3.2.</span> <span class="nav-text">常见架构模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Where-are-we-？"><span class="nav-number">2.4.</span> <span class="nav-text">Where are we ？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

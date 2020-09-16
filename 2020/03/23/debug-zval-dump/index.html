@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="debug_zval_dump() 无法输出int等类型的引用计数？ 一起读源码 xdebug_debug_zval与它的区别">
+<meta name="keywords" content="zend php">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP7函数源码逐步阅读（一）debug_zval_dump">
+<meta property="og:url" content="http://ajsonx.github.io/2020/03/23/debug-zval-dump/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="debug_zval_dump() 无法输出int等类型的引用计数？ 一起读源码 xdebug_debug_zval与它的区别">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-16T11:12:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP7函数源码逐步阅读（一）debug_zval_dump">
+<meta name="twitter:description" content="debug_zval_dump() 无法输出int等类型的引用计数？ 一起读源码 xdebug_debug_zval与它的区别">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/03/23/debug-zval-dump/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>PHP7函数源码逐步阅读（一）debug_zval_dump | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/03/23/debug-zval-dump/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PHP7函数源码逐步阅读（一）debug_zval_dump
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-23 14:12:33" itemprop="dateCreated datePublished" datetime="2020-03-23T14:12:33+08:00">2020-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-16 19:12:33" itemprop="dateModified" datetime="2020-04-16T19:12:33+08:00">2020-04-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/php/" itemprop="url" rel="index"><span itemprop="name">php</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/23/debug-zval-dump/" class="post-meta-item leancloud_visitors" data-flag-title="PHP7函数源码逐步阅读（一）debug_zval_dump" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/23/debug-zval-dump/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/23/debug-zval-dump/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ol>
+<li>debug_zval_dump() 无法输出int等类型的引用计数？</li>
+<li>一起读源码</li>
+<li>xdebug_debug_zval与它的区别</li>
+</ol>
+<a id="more"></a>
+
+<hr>
+<p><em>环境变量：</em></p>
+<p><em>MacOS High Sierra</em></p>
+<p><em>PHP-7.2.17-debug</em></p>
+<p><em>GDB-8.0.1</em></p>
+<h2 id="Q"><a href="#Q" class="headerlink" title="Q"></a>Q</h2><p><code>debug_zval_dump()</code>该函数可以打印变量的相关信息，记录变量被引用的次数并支持不定长参数。但是我在使用过程中发现对于不可变变量，例如FALSE、TRUE、INT、DOUBLE、NULL这些类型的变量。虽然被引用后增加了引用计数，但是该函数不会打印出来。运行结果如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $a = <span class="number">1</span>;</span><br><span class="line">  $b = &amp;$a;</span><br><span class="line">  debug_zval_dump($a);</span><br><span class="line">  xdebug_debug_zval(<span class="string">"a"</span>);</span><br><span class="line"><span class="comment">//结果：</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">  int(1)</span></span><br><span class="line"><span class="comment">  a: (refcount=2, is_ref=1)=1</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>以下是我使用GDB调试时的观察，执行完下面一段代码发生的变化有：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$b = &amp;$a;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>变量的地址不变，类型变为引用类型。</p>
+</li>
+<li><p>值存放在<code>zend_reference</code>中，引用计数为1。</p>
+</li>
+<li><p>接着赋值给<code>$b</code>后，引用计数加1（了解这些可以看上一篇有关zval结构的文章）。</p>
+</li>
+</ul>
+<p>所以xdebug输出的信息符合预期。那在PHP7中，自带的这个debug函数，为什么不能输出我们预期的结果，它又是怎么实现该方法的呢？</p>
+<h2 id="一起读源码"><a href="#一起读源码" class="headerlink" title="一起读源码"></a>一起读源码</h2><h3 id="主函数部分"><a href="#主函数部分" class="headerlink" title="主函数部分"></a>主函数部分</h3><p>下面这部分代码是主函数。第一块是变量的定义；</p>
+<p>第二块宏是解析可变参数的，将传来的一个或多个参数放入args；</p>
+<p>第三块for是调用函数<code>php_debug_zval_dump</code>对参数args进行循环打印。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* &#123;&#123;&#123; proto void debug_zval_dump(mixed var)</span></span><br><span class="line"><span class="comment">   Dumps a string representation of an internal zend value to output. */</span></span><br><span class="line">PHP_FUNCTION(debug_zval_dump)</span><br><span class="line">&#123;</span><br><span class="line">	zval *args;</span><br><span class="line">	<span class="keyword">int</span> argc;</span><br><span class="line">	<span class="keyword">int</span>	i;</span><br><span class="line"></span><br><span class="line">	ZEND_PARSE_PARAMETERS_START(<span class="number">1</span>, <span class="number">-1</span>)</span><br><span class="line">		Z_PARAM_VARIADIC(<span class="string">'+'</span>, args, argc)</span><br><span class="line">	ZEND_PARSE_PARAMETERS_END();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; argc; i++) &#123;</span><br><span class="line">		php_debug_zval_dump(&amp;args[i], <span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="php-debug-zval-dump"><a href="#php-debug-zval-dump" class="headerlink" title="php_debug_zval_dump"></a>php_debug_zval_dump</h3><p>紧接着我们来阅读这个函数的代码，可以看到。在初始化完变量后，进入到一个对<code>level</code>的判断。不要迷惑，这是针对多级结构的<em>空格</em>输出，从而使输出格式规范。</p>
+<p>然后进入again块，根据zval中的type去判断类型从而走不同的逻辑。</p>
+<p>一眼就能看出从<code>case IS_FALSE</code> 到 <code>case IS_DOUBLE</code>都是直接输出，%s 对应 COMMON这个局部常量，判断<code>is_ref</code>是否为1。如果为1，则在前方输出一个<code>&amp;</code>取地址符。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">PHPAPI <span class="keyword">void</span> <span class="title">php_debug_zval_dump</span><span class="params">(zval *struc, <span class="keyword">int</span> level)</span> <span class="comment">/* &#123;&#123;&#123; */</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	HashTable *myht = <span class="literal">NULL</span>;</span><br><span class="line">	zend_string *class_name;</span><br><span class="line">	<span class="keyword">int</span> is_ref = <span class="number">0</span>;</span><br><span class="line">	zend_ulong index;</span><br><span class="line">	zend_string *key;</span><br><span class="line">	zval *val;</span><br><span class="line">	<span class="keyword">uint32_t</span> count;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (level &gt; <span class="number">1</span>) &#123;</span><br><span class="line">		php_printf(<span class="string">"%*c"</span>, level - <span class="number">1</span>, <span class="string">' '</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">again:</span><br><span class="line">	<span class="keyword">switch</span> (Z_TYPE_P(struc)) &#123;</span><br><span class="line">	<span class="keyword">case</span> IS_FALSE:</span><br><span class="line">		php_printf(<span class="string">"%sbool(false)\n"</span>, COMMON);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> IS_TRUE:</span><br><span class="line">		php_printf(<span class="string">"%sbool(true)\n"</span>, COMMON);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> IS_NULL:</span><br><span class="line">		php_printf(<span class="string">"%sNULL\n"</span>, COMMON);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> IS_LONG:</span><br><span class="line">		php_printf(<span class="string">"%sint("</span> ZEND_LONG_FMT <span class="string">")\n"</span>, COMMON, Z_LVAL_P(struc));</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> IS_DOUBLE:</span><br><span class="line">		php_printf(<span class="string">"%sfloat(%.*G)\n"</span>, COMMON, (<span class="keyword">int</span>) EG(precision), Z_DVAL_P(struc));</span><br><span class="line">		<span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="STRING"><a href="#STRING" class="headerlink" title="STRING"></a>STRING</h3><p><code>case IS_STRING</code>这块，第一行输出固定格式，意义同上。字符串值的输出在第二行：<code>PHPWRITE</code>，以流形式输出字符串，这里需要传递两个参数，一个是value的指针，一个是value的长度指针。第三行接着打印出它的引用计数。三元运算符判断如果zend_string中不存在，则默认为1。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> IS_STRING:</span><br><span class="line">	php_printf(<span class="string">"%sstring(%zd) \""</span>, COMMON, Z_STRLEN_P(struc));</span><br><span class="line">	PHPWRITE(Z_STRVAL_P(struc), Z_STRLEN_P(struc));</span><br><span class="line">	php_printf(<span class="string">"\" refcount(%u)\n"</span>, Z_REFCOUNTED_P(struc) ? Z_REFCOUNT_P(struc) : <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ARRAY"><a href="#ARRAY" class="headerlink" title="ARRAY"></a>ARRAY</h3><p><code>case IS_ARRAY</code>这块代码一开始就进行一个level判断，但主函数进行调用时，level的值为1，所以第一次不会进入此处。然后计算array的长度，按格式输出array的长度和引用计数，例如：<code>array(3) refcount(2)</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> IS_ARRAY:</span><br><span class="line">	myht = Z_ARRVAL_P(struc);</span><br><span class="line">	<span class="keyword">if</span> (level &gt; <span class="number">1</span> &amp;&amp; !(GC_FLAGS(myht) &amp; GC_IMMUTABLE)) &#123;</span><br><span class="line">		<span class="keyword">if</span> (GC_IS_RECURSIVE(myht)) &#123;</span><br><span class="line">			PUTS(<span class="string">"*RECURSION*\n"</span>);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		GC_PROTECT_RECURSION(myht);</span><br><span class="line">	&#125;</span><br><span class="line">	count = zend_array_count(myht);</span><br><span class="line">	php_printf(<span class="string">"%sarray(%d) refcount(%u)&#123;\n"</span>, COMMON, count, Z_REFCOUNTED_P(struc) ? Z_REFCOUNT_P(struc) : <span class="number">1</span>);</span><br><span class="line">	ZEND_HASH_FOREACH_KEY_VAL_IND(myht, index, key, val) &#123;</span><br><span class="line">		zval_array_element_dump(val, index, key, level);</span><br><span class="line">	&#125; ZEND_HASH_FOREACH_END();</span><br><span class="line">	<span class="keyword">if</span> (level &gt; <span class="number">1</span> &amp;&amp; !(GC_FLAGS(myht) &amp; GC_IMMUTABLE)) &#123;</span><br><span class="line">		GC_UNPROTECT_RECURSION(myht);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (level &gt; <span class="number">1</span>) &#123;</span><br><span class="line">		php_printf(<span class="string">"%*c"</span>, level - <span class="number">1</span>, <span class="string">' '</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	PUTS(<span class="string">"&#125;\n"</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<p>程序继续执行，到了宏定义<code>ZEND_HASH_FOREACH_KEY_VAL_IND</code>此处，循环hash数组，输出数组内的元素。但注意在宏内调用了<code>zval_array_element_dump</code>，此函数先输出键名，我们可以从它的注释看出来。分为数字型键名和string型键名，接着调用之前的方法，传递zval，根据类型不同输出不同格式。直到<code>ZEND_HASH_FOREACH_END()</code>结束。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">zval_array_element_dump</span><span class="params">(zval *zv, zend_ulong index, zend_string *key, <span class="keyword">int</span> level)</span> <span class="comment">/* &#123;&#123;&#123; */</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (key == <span class="literal">NULL</span>) &#123; <span class="comment">/* numeric key */</span></span><br><span class="line">		php_printf(<span class="string">"%*c["</span> ZEND_LONG_FMT <span class="string">"]=&gt;\n"</span>, level + <span class="number">1</span>, <span class="string">' '</span>, index);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123; <span class="comment">/* string key */</span></span><br><span class="line">		php_printf(<span class="string">"%*c[\""</span>, level + <span class="number">1</span>, <span class="string">' '</span>);</span><br><span class="line">		PHPWRITE(ZSTR_VAL(key), ZSTR_LEN(key));</span><br><span class="line">		php_printf(<span class="string">"\"]=&gt;\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	php_debug_zval_dump(zv, level + <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于<code>case IS_ARRAY</code>的部分大致上结束了，其中部分关于<code>GC</code>的逻辑代码我没有探究，推测是垃圾回收的一些判断。</p>
+<h3 id="OBJECT到RESOURCE"><a href="#OBJECT到RESOURCE" class="headerlink" title="OBJECT到RESOURCE"></a>OBJECT到RESOURCE</h3><p>接下来的<code>case IS_OBJECT</code>也是差不多的逻辑。<code>case IS_RESOURCE</code>也是短短几行，非常容易举一反三。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">case</span> IS_OBJECT:</span><br><span class="line">	myht = zend_get_properties_for(struc, ZEND_PROP_PURPOSE_DEBUG);</span><br><span class="line">	<span class="keyword">if</span> (myht) &#123;</span><br><span class="line">		<span class="keyword">if</span> (GC_IS_RECURSIVE(myht)) &#123;</span><br><span class="line">			PUTS(<span class="string">"*RECURSION*\n"</span>);</span><br><span class="line">			zend_release_properties(myht);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		GC_PROTECT_RECURSION(myht);</span><br><span class="line">	&#125;</span><br><span class="line">	class_name = Z_OBJ_HANDLER_P(struc, get_class_name)(Z_OBJ_P(struc));</span><br><span class="line">	php_printf(<span class="string">"%sobject(%s)#%d (%d) refcount(%u)&#123;\n"</span>, COMMON, ZSTR_VAL(class_name), Z_OBJ_HANDLE_P(struc), myht ? zend_array_count(myht) : <span class="number">0</span>, Z_REFCOUNT_P(struc));</span><br><span class="line">	zend_string_release_ex(class_name, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (myht) &#123;</span><br><span class="line">		ZEND_HASH_FOREACH_KEY_VAL(myht, index, key, val) &#123;</span><br><span class="line">			zend_property_info *prop_info = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (Z_TYPE_P(val) == IS_INDIRECT) &#123;</span><br><span class="line">				val = Z_INDIRECT_P(val);</span><br><span class="line">				<span class="keyword">if</span> (key) &#123;</span><br><span class="line">					prop_info = zend_get_typed_property_info_for_slot(Z_OBJ_P(struc), val);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (!Z_ISUNDEF_P(val) || prop_info) &#123;</span><br><span class="line">				zval_object_property_dump(prop_info, val, index, key, level);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; ZEND_HASH_FOREACH_END();</span><br><span class="line">		GC_UNPROTECT_RECURSION(myht);</span><br><span class="line">		zend_release_properties(myht);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (level &gt; <span class="number">1</span>) &#123;</span><br><span class="line">		php_printf(<span class="string">"%*c"</span>, level - <span class="number">1</span>, <span class="string">' '</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	PUTS(<span class="string">"&#125;\n"</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> IS_RESOURCE: &#123;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span> *type_name = zend_rsrc_list_get_rsrc_type(Z_RES_P(struc));</span><br><span class="line">	php_printf(<span class="string">"%sresource(%d) of type (%s) refcount(%u)\n"</span>, COMMON, Z_RES_P(struc)-&gt;handle, type_name ? type_name : <span class="string">"Unknown"</span>, Z_REFCOUNT_P(struc));</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="REFERENCE（答案）"><a href="#REFERENCE（答案）" class="headerlink" title="REFERENCE（答案）"></a>REFERENCE（答案）</h3><p>我们来看<code>case IS_REFERENCE</code>，它直接隐藏了真实的引用计数，当一个类型变为引用类型，它的引用计数在这个函数中只会输出1。在注释中我们也可以看出，它这样做是为了兼容性。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">case</span> IS_REFERENCE:</span><br><span class="line">		<span class="comment">//??? hide references with refcount==1 (for compatibility)</span></span><br><span class="line">		<span class="keyword">if</span> (Z_REFCOUNT_P(struc) &gt; <span class="number">1</span>) &#123;</span><br><span class="line">			is_ref = <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		struc = Z_REFVAL_P(struc);</span><br><span class="line">		<span class="keyword">goto</span> again;</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		php_printf(<span class="string">"%sUNKNOWN:0\n"</span>, COMMON);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>至此，我们看完了这个函数的源码。在这个函数中，对于没有引用计数的类型（<code>LONG,FALSE,TRUE,DOUBLE,NULL</code>）仅仅输出它的值。</p>
+<p>对于有引用计数的类型（<code>STRING,ARRAY,OBJECT,RESOURCE</code>）根据逻辑判断，输出存放在zval结构中的refcount的值。</p>
+<p>对于引用类型，则是用原有的数据重新判断输出。</p>
+<h2 id="xdebug-debug-zval和debug-zval-dump的区别"><a href="#xdebug-debug-zval和debug-zval-dump的区别" class="headerlink" title="xdebug_debug_zval和debug_zval_dump的区别"></a>xdebug_debug_zval和debug_zval_dump的区别</h2><p>我们来看两段代码的运行结果：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $a = <span class="string">"hello"</span>;</span><br><span class="line">  debug_zval_dump($a);</span><br><span class="line">  xdebug_debug_zval(<span class="string">'a'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 运行结果</span></span><br><span class="line"><span class="comment">  string(5) "hello" refcount(1)</span></span><br><span class="line"><span class="comment">  a: (interned, is_ref=0)='hello'</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>一个字符串的默认引用计数为1。在上面这段代码的输出结果中，<code>debug_zval_dump</code>的结果是符合预期的。而xdebug输出的<code>interned</code>是什么意思？我们先保留疑问，再敲一段代码。</p>
+<p>接下来这段代码输出的类型也是字符串：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $a = <span class="string">"timestamp is : "</span> . time();</span><br><span class="line">  debug_zval_dump($a);</span><br><span class="line">  xdebug_debug_zval(<span class="string">'a'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 运行结果</span></span><br><span class="line"><span class="comment">string(25) "timestamp is : 1585102731" refcount(2)</span></span><br><span class="line"><span class="comment">a: (refcount=1, is_ref=0)='timestamp is : 1585102731'</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>为什么<code>debug_zval_dump</code>输出2？而xdebug这次的输出结果却是符合预期的？！</p>
+<h2 id="深入探究"><a href="#深入探究" class="headerlink" title="深入探究"></a>深入探究</h2><h3 id="Interned-String"><a href="#Interned-String" class="headerlink" title="Interned String"></a>Interned String</h3><p>在PHP5.4的时候, 引入了Interned String机制, 用于优化PHP对字符串的存储和处理。</p>
+<p>Interned String 可以包括<strong>变量名称、类名、方法名、字符串、注释</strong>等。第一段代码中的<code>$a = &#39;hello&#39;</code>，在多次编译下结果都不会产生变化。<strong>它们的生存周期存在于整个请求期间，请求结束后会统一销毁释放</strong>，自然也就无需通过引用计数进行内存管理。</p>
+<h3 id="Immutable-array不可变数组"><a href="#Immutable-array不可变数组" class="headerlink" title="Immutable array不可变数组"></a>Immutable array不可变数组</h3><p>所有多次编译结果恒定不变的数组，都会被优化为<strong>不可变数组</strong>，是 <code>opcache</code> 扩展优化出的一种数组类型，多次编译结果不会产生变化，便会放入到OPcache里面进行优化。</p>
+<h3 id="函数调用增加引用计数"><a href="#函数调用增加引用计数" class="headerlink" title="函数调用增加引用计数"></a>函数调用增加引用计数</h3><p>函数调用会增加引用计数，但在函数调用完成之后，函数内部变量销毁，引用计数减少到保持原有的值。而<em>debug_zval_dump</em> 这是一个php函数，它的输出是在函数内部的，所以输出的是它增加的引用计数。</p>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>debug_zval_dump是PHP函数，函数调用会增加引用，而的输出正是在函数内部的，所以输出的引用计数是增加过的。</li>
+<li>使用xdebug_debug_zval是正确的，但需要理解<code>Interned String</code> 和 <code>Immutable array</code>的概念，这些内容可以在参考文章中详细了解。</li>
+<li>学会GDB调试，逐步理解PHP源码执行过程</li>
+</ul>
+<p>猜测，推导，证明的过程。所以要不断动手尝试，不能浮于表面。</p>
+<p>以上的内容还涉及到了写时复制、写时分离、引用计数等等，每一个概念在PHP7的实现都值得深入探究。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://juejin.im/post/5bbf50e86fb9a05ce02a9c19" target="_blank" rel="noopener">PHP7各种数据类型的引用计数</a></p>
+<p><a href="https://www.awaimai.com/2684.html#42_Interned_String" target="_blank" rel="noopener">OPcache工作原理</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/03/23/debug-zval-dump/" title="PHP7函数源码逐步阅读（一）debug_zval_dump">http://ajsonx.github.io/2020/03/23/debug-zval-dump/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/zend-php/" rel="tag"># zend php</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/21/php-zval/" rel="prev" title="PHP7中zval的实现">
+      <i class="fa fa-chevron-left"></i> PHP7中zval的实现
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/04/laravel-service-container/" rel="next" title="laravel服务容器实践">
+      laravel服务容器实践 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Q"><span class="nav-number">1.</span> <span class="nav-text">Q</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一起读源码"><span class="nav-number">2.</span> <span class="nav-text">一起读源码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主函数部分"><span class="nav-number">2.1.</span> <span class="nav-text">主函数部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#php-debug-zval-dump"><span class="nav-number">2.2.</span> <span class="nav-text">php_debug_zval_dump</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#STRING"><span class="nav-number">2.3.</span> <span class="nav-text">STRING</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARRAY"><span class="nav-number">2.4.</span> <span class="nav-text">ARRAY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OBJECT到RESOURCE"><span class="nav-number">2.5.</span> <span class="nav-text">OBJECT到RESOURCE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REFERENCE（答案）"><span class="nav-number">2.6.</span> <span class="nav-text">REFERENCE（答案）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">2.7.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xdebug-debug-zval和debug-zval-dump的区别"><span class="nav-number">3.</span> <span class="nav-text">xdebug_debug_zval和debug_zval_dump的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深入探究"><span class="nav-number">4.</span> <span class="nav-text">深入探究</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Interned-String"><span class="nav-number">4.1.</span> <span class="nav-text">Interned String</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Immutable-array不可变数组"><span class="nav-number">4.2.</span> <span class="nav-text">Immutable array不可变数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数调用增加引用计数"><span class="nav-number">4.3.</span> <span class="nav-text">函数调用增加引用计数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结-1"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">6.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="都是一些MySQL的基础知识  分组排序解决方案 MySQL 函数、存储过程 SQL执行顺序（牢记） MySQL 8.0 窗口函数">
+<meta name="keywords" content="mysql sql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL分组排序引发的问题">
+<meta property="og:url" content="http://ajsonx.github.io/2020/02/15/mysql-grouping-sorting/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="都是一些MySQL的基础知识  分组排序解决方案 MySQL 函数、存储过程 SQL执行顺序（牢记） MySQL 8.0 窗口函数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200216/sql_exec_order.jpeg">
+<meta property="og:updated_time" content="2020-02-14T16:57:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL分组排序引发的问题">
+<meta name="twitter:description" content="都是一些MySQL的基础知识  分组排序解决方案 MySQL 函数、存储过程 SQL执行顺序（牢记） MySQL 8.0 窗口函数">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200216/sql_exec_order.jpeg">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/02/15/mysql-grouping-sorting/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySQL分组排序引发的问题 | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/02/15/mysql-grouping-sorting/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL分组排序引发的问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-02-15 00:57:33" itemprop="dateCreated datePublished" datetime="2020-02-15T00:57:33+08:00">2020-02-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index"><span itemprop="name">mysql</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/02/15/mysql-grouping-sorting/" class="post-meta-item leancloud_visitors" data-flag-title="MySQL分组排序引发的问题" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/02/15/mysql-grouping-sorting/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/15/mysql-grouping-sorting/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>都是一些MySQL的基础知识</p>
+<ol>
+<li>分组排序解决方案</li>
+<li>MySQL 函数、存储过程</li>
+<li>SQL执行顺序（牢记）</li>
+<li>MySQL 8.0 窗口函数</li>
+</ol>
+<a id="more"></a>
+<hr>
+<blockquote>
+<p>以下所有SQL语句在 (Mysql5.8 , Navicat 12) 测试成功执行</p>
+</blockquote>
+<h1 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h1><p>Retrieving the last record in each group，类似Oracle 中 Top 函数。</p>
+<p>分组Top N问题。在商品中取相同分类下最新创建的一个。</p>
+<p>先来建表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`goods`</span>(</span><br><span class="line">	<span class="string">`id`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">UNSIGNED</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT <span class="keyword">COMMENT</span> <span class="string">'主键ID'</span>,</span><br><span class="line">	<span class="string">`category_id`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">UNSIGNED</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'分类ID'</span>,</span><br><span class="line">	<span class="string">`unit_price`</span> <span class="built_in">decimal</span>(<span class="number">11</span>,<span class="number">4</span>) <span class="keyword">UNSIGNED</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'商品单价/元'</span>,</span><br><span class="line">	<span class="string">`create_time`</span> datetime(<span class="number">0</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'创建时间'</span>,</span><br><span class="line">	<span class="string">`update_time`</span> datetime(<span class="number">0</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'更新时间'</span>,</span><br><span class="line">	PRIMARY <span class="keyword">KEY</span>(<span class="string">`id`</span>),</span><br><span class="line">	<span class="keyword">KEY</span> <span class="string">`idx_category_id_create_time`</span> (<span class="string">`category_id`</span>,<span class="string">`create_time`</span>) <span class="keyword">USING</span> BTREE</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> AUTO_INCREMENT=<span class="number">13</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8mb4 <span class="keyword">COLLATE</span>=utf8mb4_bin</span><br></pre></td></tr></table></figure>
+
+<h1 id="分组排序"><a href="#分组排序" class="headerlink" title="分组排序"></a>分组排序</h1><h2 id="Step-1-分析"><a href="#Step-1-分析" class="headerlink" title="Step 1.分析"></a>Step 1.分析</h2><ul>
+<li><p>相同分类：可以用到<code>group by</code></p>
+</li>
+<li><p>最新一行：可以考虑取<code>id</code>或者<code>create_time</code>较大值，也可以尝试使用<code>order by</code></p>
+</li>
+</ul>
+<h2 id="Step-2-编写"><a href="#Step-2-编写" class="headerlink" title="Step 2.编写"></a>Step 2.编写</h2><p>尝试写了以下几条SQL：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">❌ SELECT * </span><br><span class="line">   <span class="keyword">FROM</span> goods </span><br><span class="line">  <span class="built_in"> GROUP </span>BY category_id </span><br><span class="line">   ORDER BY create_time DESC</span><br></pre></td></tr></table></figure>
+
+<p>然而MYSQL的执行顺序并没有那么理想化。并不会对组内排序，而是先分组，后排序。并且这条SQL在5.7下也无法执行。</p>
+<p>针对最大值考虑使用聚合函数：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">❌ SELECT *,category_id,max(create_time) </span><br><span class="line">   <span class="keyword">FROM</span> goods </span><br><span class="line">  <span class="built_in"> GROUP </span>BY category_id</span><br></pre></td></tr></table></figure>
+
+<p>看上去没什么大问题，但它无法执行，因为（SELECT *）违反了MySQL <code>only_full_group_by</code>的规则。这里先不做解释，我们来试着改造下这个sql。</p>
+<p>上一条sql中我们已经有了最大时间和分类id，我们可以考虑使用联表查询：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">✅ SELECT <span class="selector-tag">a</span><span class="selector-class">.unit_price</span>, <span class="selector-tag">a</span><span class="selector-class">.category_id</span>, <span class="selector-tag">a</span><span class="selector-class">.create_time</span> </span><br><span class="line">   FROM goods <span class="selector-tag">a</span> INNER JOIN (</span><br><span class="line">     SELECT category_id,max(create_time) AS max_time </span><br><span class="line">     FROM goods </span><br><span class="line">     GROUP BY category_id</span><br><span class="line">   ) AS <span class="selector-tag">b</span> </span><br><span class="line">   ON <span class="selector-tag">a</span><span class="selector-class">.category_id</span> = <span class="selector-tag">b</span><span class="selector-class">.category_id</span> </span><br><span class="line">   AND <span class="selector-tag">a</span><span class="selector-class">.create_time</span> = <span class="selector-tag">b</span>.max_time</span><br></pre></td></tr></table></figure>
+
+<p>执行成功，是我们想要的结果。</p>
+<p><code>INNER JOIN</code> 可以考虑换成<code>LEFT JOIN</code> 加上 <code>IS NULL</code>，作为参照对比性能：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">✅ SELECT <span class="selector-tag">a</span><span class="selector-class">.unit_price</span>, <span class="selector-tag">a</span><span class="selector-class">.category_id</span>, <span class="selector-tag">a</span><span class="selector-class">.create_time</span> </span><br><span class="line">    FROM goods <span class="selector-tag">a</span> LEFT JOIN (</span><br><span class="line">     SELECT category_id,max(create_time) AS max_time </span><br><span class="line">     FROM goods GROUP BY category_id</span><br><span class="line">    ) AS <span class="selector-tag">b</span> </span><br><span class="line">   ON <span class="selector-tag">a</span><span class="selector-class">.category_id</span> = <span class="selector-tag">b</span><span class="selector-class">.category_id</span> </span><br><span class="line">   AND <span class="selector-tag">a</span><span class="selector-class">.create_time</span> = <span class="selector-tag">b</span>.max_time</span><br><span class="line">   WHERE <span class="selector-tag">b</span><span class="selector-class">.category_id</span> IS NOT NULL</span><br></pre></td></tr></table></figure>
+
+<p>也可以写在<code>WHERE</code>后的子查询 这里取巧的按ID大小来排序：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">✅ SELECT unit_price,category_id,create_time </span><br><span class="line">   <span class="keyword">FROM</span> goods WHERE id <span class="keyword">IN</span> (</span><br><span class="line">    SELECT MAX(id) </span><br><span class="line">    <span class="keyword">FROM</span> goods </span><br><span class="line">   <span class="built_in"> GROUP </span>BY category_id</span><br><span class="line">   )</span><br></pre></td></tr></table></figure>
+
+<p>在网上看到这种方法，MYSQL5.7之前默认取第一条，可以利用这个特性来做。<br>5.7之后，会对组内排序优化，从而忽视组内排序。加上limit max_int 就可以无视：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">❓ SELECT * <span class="keyword">FROM</span> (</span><br><span class="line">    SELECT * <span class="keyword">FROM</span> test </span><br><span class="line">    ORDER BY seq DESC limit 10000000000</span><br><span class="line">    ) tmp </span><br><span class="line">  <span class="built_in"> GROUP </span>BY NAME</span><br></pre></td></tr></table></figure>
+
+<p>个人并不是很喜欢这种解法。首先逻辑上并不成立，排序完再分组取的不一定是第一条，同样在5.7下依然因为<code>only_full_group_by</code>无法运行。</p>
+<p>至此，根据所学写了三条可用的SQL。但还不够，我们接下来造数据调试一下。</p>
+<h2 id="Step-3-优化"><a href="#Step-3-优化" class="headerlink" title="Step 3.优化"></a>Step 3.优化</h2><p> mysql 创建存储过程： </p>
+<figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">-- 以下是在 Mac/Navicat/<span class="number">12.0</span>下执行的 可以不加DEFINER 命令行执行需要加上DELIMITER $$ 声明开始结束</span><br><span class="line"><span class="keyword">CREATE</span> DEFINER=`root`@`localhost` <span class="function"><span class="keyword">PROCEDURE</span> `<span class="title">RandomInsert</span>`<span class="params">(<span class="keyword">IN</span> time_len INT,<span class="keyword">IN</span> category_len INT,<span class="keyword">IN</span> len INT)</span> -- 三个参数分别是时间戳增加值，分类数，插入条数</span></span><br><span class="line"><span class="function"><span class="title">BEGIN</span></span></span><br><span class="line"><span class="function">  <span class="title">DECLARE</span> <span class="title">i</span> <span class="title">INT</span>;</span></span><br><span class="line">	DECLARE ts INT;</span><br><span class="line">	<span class="keyword">SET</span> i = <span class="number">0</span>; </span><br><span class="line">	START TRANSACTION;</span><br><span class="line">	<span class="keyword">WHILE</span> i &lt;= len <span class="keyword">DO</span></span><br><span class="line">	<span class="keyword">SET</span> ts = UNIX_TIMESTAMP( NOW()) + CEIL(RAND() * i); -- 随机时间戳</span><br><span class="line">	INSERT goods(category_id, unit_price, create_time, update_time) VALUES(FLOOR(</span><br><span class="line">	RAND() * category_len), FLOOR( RAND() * <span class="number">1000</span>) , FROM_UNIXTIME(ts),FROM_UNIXTIME(ts) );</span><br><span class="line">	<span class="keyword">SET</span> i = i+<span class="number">1</span>;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">WHILE</span>;</span><br><span class="line">COMMIT;</span><br><span class="line"><span class="keyword">END</span></span><br><span class="line"></span><br><span class="line">-- 新建另一个函数去调用我们刚刚创建的方法</span><br><span class="line">CALL RandomInsert(<span class="number">1000</span>,<span class="number">1000</span>,<span class="number">10000000</span>) -- 这里我插入了一千万条，只分了<span class="number">1000</span>个类（本机最终耗时<span class="number">3326</span>秒。i7-<span class="number">4700</span>MQ)</span><br></pre></td></tr></table></figure>
+
+<p>以下是平均查询耗时</p>
+<ul>
+<li><code>INNER JOIN</code> : 0.014s</li>
+<li><code>LEFT JOIN</code> : 0.028s</li>
+<li><code>WHERE IN</code> : 6.5s</li>
+</ul>
+<p>利用<code>EXPLAIN</code> &amp;&amp; <code>SHOW WARNINGS</code>可以看到<code>WHERE IN</code> 的查询方式多了一次全表扫描</p>
+<p>结论：相同需求时<code>LEFT JOIN</code>需要多出 <code>n*n/2 + n/2</code> 次的 <code>IS NULL</code> 操作，故最好选择<code>INNER JOIN</code></p>
+<h1 id="SQL执行顺序"><a href="#SQL执行顺序" class="headerlink" title="SQL执行顺序"></a>SQL执行顺序</h1><p>基础知识，不过多赘述。（<a href="https://blog.csdn.net/J080624/article/details/80703903" target="_blank" rel="noopener">图片转自CSND</a>）</p>
+<p><img src="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200216/sql_exec_order.jpeg" alt="SQL执行顺序"></p>
+<h1 id="MySQL8-0的窗口函数"><a href="#MySQL8-0的窗口函数" class="headerlink" title="MySQL8.0的窗口函数"></a>MySQL8.0的窗口函数</h1><p>MYSQL从8.0开始支持窗口函数。经过短暂的学习后我们可以写出分组排序的另一种解决方案：</p>
+<figure class="highlight n1ql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">✅ <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> (</span><br><span class="line">    <span class="keyword">SELECT</span> </span><br><span class="line">    category_id, </span><br><span class="line">    unit_price,</span><br><span class="line">    create_time,</span><br><span class="line">    ROW_NUMBER() <span class="keyword">OVER</span> (</span><br><span class="line">        <span class="keyword">PARTITION</span> <span class="keyword">BY</span> category_id </span><br><span class="line">        <span class="keyword">ORDER</span> <span class="keyword">BY</span> create_time <span class="keyword">DESC</span></span><br><span class="line">    ) <span class="keyword">as</span> rn</span><br><span class="line">    <span class="keyword">FROM</span></span><br><span class="line">   goods) t</span><br><span class="line">   <span class="keyword">WHERE</span> rn &lt;= <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>ROW_NUMBER()</code> 就是一个窗口函数</p>
+<p>调用窗口函数的格式是：<code>函数名（[expr]） OVER子句</code></p>
+<p>其中，<code>PARTITION BY</code> 是分区的意思，我暂时理解为<code>GROUP BY</code> 不做深究</p>
+<p>最关键的就是 <code>WHERE</code> 子句后面的内容 ：<code>row_number &lt;= 1</code> 感觉是不是回到了<code>ORACLE</code>？</p>
+<p><strong>优点就是真的太方便了，缺点就是执行效率感人（与联表查询相同索引的情况下，执行了两次全表扫描）</strong></p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ul>
+<li><p><a href="https://stackoverflow.com/questions/1313120/retrieving-the-last-record-in-each-group-mysql" target="_blank" rel="noopener">stackoverflow</a> </p>
+</li>
+<li><p><a href="https://www.cnblogs.com/DataArt/p/9961676.html" target="_blank" rel="noopener">Mysql8.0窗口函数</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/02/15/mysql-grouping-sorting/" title="MySQL分组排序引发的问题">http://ajsonx.github.io/2020/02/15/mysql-grouping-sorting/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mysql-sql/" rel="tag"># mysql sql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/06/middleground/" rel="prev" title="我在做什么——什么是中台？">
+      <i class="fa fa-chevron-left"></i> 我在做什么——什么是中台？
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/12/first-year-interview/" rel="next" title="一年经验的PHP程序员面试准备以及面筋">
+      一年经验的PHP程序员面试准备以及面筋 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#需求"><span class="nav-number">1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分组排序"><span class="nav-number">2.</span> <span class="nav-text">分组排序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Step-1-分析"><span class="nav-number">2.1.</span> <span class="nav-text">Step 1.分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step-2-编写"><span class="nav-number">2.2.</span> <span class="nav-text">Step 2.编写</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step-3-优化"><span class="nav-number">2.3.</span> <span class="nav-text">Step 3.优化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SQL执行顺序"><span class="nav-number">3.</span> <span class="nav-text">SQL执行顺序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MySQL8-0的窗口函数"><span class="nav-number">4.</span> <span class="nav-text">MySQL8.0的窗口函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">5.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

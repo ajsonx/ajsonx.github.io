@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="“有点追求的PHPer都应该了解zval”  ZVAL OPcache原理  本文完全是学习大牛博文的记录">
+<meta name="keywords" content="php zval">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP7中zval的实现">
+<meta property="og:url" content="http://ajsonx.github.io/2020/03/21/php-zval/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="“有点追求的PHPer都应该了解zval”  ZVAL OPcache原理  本文完全是学习大牛博文的记录">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-15T02:04:38.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP7中zval的实现">
+<meta name="twitter:description" content="“有点追求的PHPer都应该了解zval”  ZVAL OPcache原理  本文完全是学习大牛博文的记录">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/03/21/php-zval/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>PHP7中zval的实现 | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/03/21/php-zval/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PHP7中zval的实现
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-21 17:26:24" itemprop="dateCreated datePublished" datetime="2020-03-21T17:26:24+08:00">2020-03-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-15 10:04:38" itemprop="dateModified" datetime="2020-04-15T10:04:38+08:00">2020-04-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/php/" itemprop="url" rel="index"><span itemprop="name">php</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/21/php-zval/" class="post-meta-item leancloud_visitors" data-flag-title="PHP7中zval的实现" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/21/php-zval/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/21/php-zval/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>“有点追求的PHPer都应该了解zval”</p>
+<ol>
+<li>ZVAL</li>
+<li>OPcache原理</li>
+</ol>
+<p>本文完全是学习大牛博文的记录</p>
+<a id="more"></a>
+
+<hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><em>关于zval这块可以说涉及到非常多的知识，比如我们常见的引用计数、垃圾回收、写时复制。如果要深入的去理解这几个常见的问题，你需要学习了解PHP中变量是如何设计的。但我总喜欢问的干净点，为什么在PHP7中对int、double、bool、null不使用引用计数，string只是有些计数，有些不计数。如果不使用的话又如何进行垃圾回收？又或者说，对于单进程，生命周期结束就释放资源的PHP有必要进行垃圾回收吗？又是如何靠垃圾回收进行优化的？</em></p>
+<p><em>本来一开始已经写好了有关PHP7中zval的结构，但是我们毕竟是站在巨人肩膀上的菜鸟，已经写不出比大佬更优秀的文章了。这里就记录一下阅读过程的总结和思考</em></p>
+<h2 id="第一篇·鸟哥"><a href="#第一篇·鸟哥" class="headerlink" title="第一篇·鸟哥"></a>第一篇·鸟哥</h2><blockquote>
+<p>一个良好的设计, 一旦有了意外, 就会导致整个结构变得复杂, 维护性降低。——<a href="https://www.laruence.com/author/laruence" target="_blank" rel="noopener">laruence</a></p>
+</blockquote>
+<p><a href="https://www.laruence.com/2018/04/08/3170.html" target="_blank" rel="noopener">深入理解PHP7内核之zval——作者laruence</a></p>
+<h3 id="上半段"><a href="#上半段" class="headerlink" title="上半段"></a>上半段</h3><p>鸟哥的这篇文章分为两段，上半段主要介绍了六个方面的PHP5设计局限性：</p>
+<ol>
+<li><p>zval.value 在64bit机器下需要24个字节，而在32bit下需要16字节。<code>zend_object_value</code>最不常用，但却是最大的长板，因为它占到16字节</p>
+</li>
+<li><p>无预留字段，不方便实现复杂的功能</p>
+</li>
+<li><p>对象和资源（引用）传递时，需要一个全局引用计数才能保证它被回收。所以，在PHP5中它有两套引用计数</p>
+</li>
+<li><p>用到相同字符串时，只能复制整个zval</p>
+</li>
+<li><p>发生写时分离，导致数组复制，拖慢性能</p>
+</li>
+<li><p>PHP5源码的tmp临时变量优化</p>
+</li>
+</ol>
+<h3 id="下半段"><a href="#下半段" class="headerlink" title="下半段"></a>下半段</h3><p>文章的下半段详细介绍了PHP7zval的实现，以及解决的性能问题，我在这里顺序梳理一遍。</p>
+<ul>
+<li>现在PHP7的<code>zval</code>分为了三个部分，分别是负责存储类型信息（<code>Type_Info</code>）的<code>u1</code>，一些预留字段的<code>u2</code>，以及存储变量的值的<code>zend_value</code>。以上三个结构都是联合体，其中再有复杂的结构就用指针指向，所占字节不超过16字节。（<code>zend_value</code> 8字节，<code>u1</code>，<code>u2</code>对齐占8字节，共16字节。ps：64bit机器C++ &amp;&amp; 32bit同样）</li>
+<li>zval的类型现在分为17种，值得注意的是<code>TRUE</code>和<code>FALSE</code>是两种类型了</li>
+<li><code>LONG,DOUBLE,NULL,FALSE,TRUE</code>这些类型无需引用计数了</li>
+<li>对于复杂类型，仅需在zval中用一个指针指向该类型，引用计数也保存在该类型上。类似<code>zend_string,zend_array,zend_refcounted</code>这些结构体。</li>
+<li><code>ZEND_ENDIAN_LOHI_4</code>这个宏的作用是简化赋值（用来解决跨平台大小端问题的）</li>
+<li>关于常量类型和不可变类型等标志位的介绍</li>
+<li>最后一部分留了个坑，大概意思就是随着zval的内存分配方式改变，zval传递的方式也将改变。</li>
+</ul>
+<h2 id="第二篇·PHP开发组成员"><a href="#第二篇·PHP开发组成员" class="headerlink" title="第二篇·PHP开发组成员"></a>第二篇·PHP开发组成员</h2><p><a href="https://0x1.im/blog/php/Internal-value-representation-in-PHP-7-part-1.html" target="_blank" rel="noopener">[译]变量在 PHP7 内部的实现（一）</a></p>
+<p>这篇文章翻译自国外PHP开发大佬的博客，内容上有重复，相对更加详细具体，挑着看就好了。</p>
+<p>在浏览第二篇文章之前，可以试着先思考下面的这些问题，在文章中都可以找到答案。</p>
+<ul>
+<li>C++中<code>struct</code>字节对齐是什么，<code>union,struct</code>所占字节大小计算方式，PHP7是如何利用字节对齐减少了<code>zval</code>所占大小？</li>
+<li>循环引用如何产生的，PHP5是如何解决的？</li>
+<li>什么是写时复制</li>
+<li>如果你了解PHP的引用计数，它是为了方便进行内存管理，实现垃圾回收。那么思考一下，既然Java有常量池的概念，并且PHP5.4后也引入了<strong>Interned String</strong>的概念，那么PHP有没有？它是如何实现的？</li>
+</ul>
+<p>最后一个问题又引入了另一个概念：<strong>OPcache</strong>（越学不懂的越多，太真实了！）</p>
+<h2 id="第三篇·OPcache"><a href="#第三篇·OPcache" class="headerlink" title="第三篇·OPcache"></a>第三篇·OPcache</h2><p><a href="https://www.awaimai.com/2684.html#42_Interned_String" target="_blank" rel="noopener">OPcache工作原理</a></p>
+<p>也是一篇好文章，浅显易懂。</p>
+<ul>
+<li>OPcache 是Zend官方出品的缓存拓展，还具有代码优化功能，省去了每次加载和解析 PHP 脚本的开销。</li>
+<li>缓存两类内容:<ul>
+<li>OPCode（这里关于OPCode可以使用拓展<code>VLM</code>去了解）</li>
+<li>Interned String，如注释、变量名等</li>
+</ul>
+</li>
+<li>OPCache缓存的机制主要是：<strong>将编译好的操作码放入共享内存，提供给其他进程访问</strong>。<ul>
+<li>文章还详细讲了共享内存，有兴趣可以深入了解</li>
+</ul>
+</li>
+<li>Interned String 缓存的内容包括： <strong>变量名称、类名、方法名、字符串、注释</strong>等。</li>
+<li>文章的第5，6点接触不多，暂时感觉不到，先搁置。</li>
+</ul>
+<hr>
+<p>多用GDB感受一下zval的结构！</p>
+<p>好好学就是了！</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/03/21/php-zval/" title="PHP7中zval的实现">http://ajsonx.github.io/2020/03/21/php-zval/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/php-zval/" rel="tag"># php zval</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/12/first-year-interview/" rel="prev" title="一年经验的PHP程序员面试准备以及面筋">
+      <i class="fa fa-chevron-left"></i> 一年经验的PHP程序员面试准备以及面筋
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/23/debug-zval-dump/" rel="next" title="PHP7函数源码逐步阅读（一）debug_zval_dump">
+      PHP7函数源码逐步阅读（一）debug_zval_dump <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第一篇·鸟哥"><span class="nav-number">2.</span> <span class="nav-text">第一篇·鸟哥</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#上半段"><span class="nav-number">2.1.</span> <span class="nav-text">上半段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#下半段"><span class="nav-number">2.2.</span> <span class="nav-text">下半段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第二篇·PHP开发组成员"><span class="nav-number">3.</span> <span class="nav-text">第二篇·PHP开发组成员</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第三篇·OPcache"><span class="nav-number">4.</span> <span class="nav-text">第三篇·OPcache</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

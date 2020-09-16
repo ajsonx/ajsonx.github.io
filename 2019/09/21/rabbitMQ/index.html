@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这周忙于部门的技术分享会，整理了一份消息队列中间件的技术知识文档  什么是消息队列（MQ）？ 使用MQ的优劣势？ RabbitMQ构成 AMQP协议 深入了解RabbitMQ 代码">
+<meta name="keywords" content="RabbitMQ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ">
+<meta property="og:url" content="http://ajsonx.github.io/2019/09/21/rabbitMQ/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="这周忙于部门的技术分享会，整理了一份消息队列中间件的技术知识文档  什么是消息队列（MQ）？ 使用MQ的优劣势？ RabbitMQ构成 AMQP协议 深入了解RabbitMQ 代码">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-21T08:39:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RabbitMQ">
+<meta name="twitter:description" content="这周忙于部门的技术分享会，整理了一份消息队列中间件的技术知识文档  什么是消息队列（MQ）？ 使用MQ的优劣势？ RabbitMQ构成 AMQP协议 深入了解RabbitMQ 代码">
+
+<link rel="canonical" href="http://ajsonx.github.io/2019/09/21/rabbitMQ/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>RabbitMQ | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2019/09/21/rabbitMQ/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RabbitMQ
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-21 16:39:35" itemprop="dateCreated datePublished" datetime="2019-09-21T16:39:35+08:00">2019-09-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/消息队列/" itemprop="url" rel="index"><span itemprop="name">消息队列</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/09/21/rabbitMQ/" class="post-meta-item leancloud_visitors" data-flag-title="RabbitMQ" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/09/21/rabbitMQ/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/09/21/rabbitMQ/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这周忙于部门的技术分享会，整理了一份消息队列中间件的技术知识文档</p>
+<ol>
+<li>什么是消息队列（MQ）？</li>
+<li>使用MQ的优劣势？</li>
+<li>RabbitMQ构成</li>
+<li>AMQP协议</li>
+<li>深入了解RabbitMQ</li>
+<li>代码<a id="more"></a>
+</li>
+</ol>
+<hr>
+<h1 id="消息队列中间件"><a href="#消息队列中间件" class="headerlink" title="消息队列中间件"></a>消息队列中间件</h1><p>队列：先进先出</p>
+<p>消息队列：把要传输的数据放在队列里</p>
+<h2 id="为什么使用MQ？"><a href="#为什么使用MQ？" class="headerlink" title="为什么使用MQ？"></a>为什么使用MQ？</h2><ul>
+<li><p><strong>应用解耦</strong></p>
+<p>在这个场景中，A 系统跟其它各种乱七八糟的系统严重耦合，A 系统产生一条比较关键的数据，很多系统都需要 A 系统将这个数据发送过来。A 系统要时时刻刻考虑 BCDE 四个系统如果挂了该咋办？要不要重发，要不要把消息存起来？</p>
+<p>一个系统或者一个模块，调用了多个系统或者模块，互相之间的调用很复杂，维护起来很麻烦。但是其实这个调用是不需要直接同步调用接口的，如果用 MQ 给它异步化解耦，也是可以的，你就需要去考虑在你的项目里，是不是可以运用这个 MQ 去进行系统的解耦。</p>
+<p><strong>总结</strong>：通过一个 MQ，Pub/Sub 发布订阅消息这么一个模型，A 系统就跟其它系统彻底解耦了。</p>
+</li>
+<li><p><strong>异步处理</strong></p>
+<p>再来看一个场景，A 系统接收一个请求，需要在自己本地写库，还需要在 BCD 三个系统写库，自己本地写库要 3ms，BCD 三个系统分别写库要 300ms、450ms、200ms。最终请求总延时是 3 + 300 + 450 + 200 = 953ms，接近 1s</p>
+<p>一般要求是每个请求都必须在 <strong>200 ms</strong> 以内完成，对用户几乎是无感知的。</p>
+<p>如果使用 MQ，那么 A 系统连续发送 3 条消息到 MQ 队列中，假如耗时 5ms，A 系统从接受一个请求到返回响应给用户，总时长是 3 + 5 = 8ms，对于用户而言，其实感觉上就是点个按钮，8ms 以后就直接返回了</p>
+</li>
+<li><p><strong>流量削峰</strong></p>
+<p>每天 0:00 到 12:00，系统风平浪静，每秒并发请求数量就 50 个。结果每次一到 12:00 ~ 13:00 ，每秒并发请求数量暴增，大量的请求涌入 MySQL，可能就直接把 MySQL 给打死了，导致系统崩溃。但是高峰期一过，到了下午的时候，就成了低峰期，对整个系统几乎没有任何的压力</p>
+<p>如果使用 MQ，A 系统从 MQ 中慢慢拉取请求，每秒钟就拉取 2k 个请求，不要超过自己每秒能处理的最大请求数量就 ok，这样下来，哪怕是高峰期的时候，A 系统也绝对不会挂掉。只要高峰期一过，A 系统就会快速将积压的消息给解决掉。</p>
+</li>
+</ul>
+<h2 id="使用MQ的劣势"><a href="#使用MQ的劣势" class="headerlink" title="使用MQ的劣势"></a>使用MQ的劣势</h2><ul>
+<li><p>系统可用性降低</p>
+<p>系统引入的外部依赖越多，越容易挂掉。MQ 一挂，整套系统崩溃，你不就完了？如何保证消息队列的高可用？</p>
+</li>
+<li><p>系统复杂度提高</p>
+<p>怎么保证消息没有重复消费？怎么处理消息丢失的情况？怎么保证消息传递的顺序性？</p>
+</li>
+<li><p>一致性问题</p>
+<p>数据写入多个系统时需要保证一致性</p>
+<p>订单系统、如果用户下单支付成功，需要更新订单状态、减少库存、赠送积分。</p>
+</li>
+</ul>
+<h1 id="深入了解RabbitMQ"><a href="#深入了解RabbitMQ" class="headerlink" title="深入了解RabbitMQ"></a>深入了解RabbitMQ</h1><h2 id="AMQP"><a href="#AMQP" class="headerlink" title="AMQP"></a>AMQP</h2><h3 id="AMQP协议"><a href="#AMQP协议" class="headerlink" title="AMQP协议"></a>AMQP协议</h3><ul>
+<li><p>在OSI七层模型中属于<strong>应用层</strong>的协议（类似的还有HTTP、DNS、FTP）</p>
+</li>
+<li><p>一个AMQP服务器类似于邮件服务器，exchange类似于消息传输代理（email里的概念），message queue类似于邮箱。Binding定义了每一个传输代理中的消息路由表，发布者将消息发给特定的传输代理，然后传输代理将这些消息路由到邮箱中，消费者从这些邮箱中取出消息。</p>
+</li>
+<li><p>AMQP术语</p>
+<ul>
+<li><p><strong>Channel（信道）：</strong> 在AMQP模型中，我们不需要通过建立太多的TCP连接来实现。假如针对每一个AMQP连接都建立一个TCP连接的话，会占用大量的系统资源。对此，AMQP提供了通道（channel）机制。即，共享一个TCP连接，可创建多个通道。</p>
+<p>​    在多线程/进程的应用程序中正确做法是，对于每一个线程/进程，应分别建立一个通道，而不是多个线程/进程之间去共享一个通道。</p>
+</li>
+<li><p><strong>Exchange（交换器）：</strong>用于接受、分配消息；可以有好几种模式、相当于邮箱</p>
+</li>
+<li><p><strong>Queue（队列）</strong>：用于存储生产者的消息；</p>
+</li>
+<li><p><strong>RoutingKey（路由键）</strong>：用于把生成者的数据分配到交换器上；</p>
+</li>
+<li><p><strong>BindingKey（绑定键）</strong>：用于把交换器的消息绑定到队列上；</p>
+</li>
+<li><p><strong>Broker</strong>（消息代理）：消息代理会接收来自生产者（publishers/producers）生产的消息，并将它们路由(route，可以理解成按指定规则转发)给相应的消费者(consumers)手中。</p>
+</li>
+<li><p><strong>VHOST（虚拟主机）</strong>：为了在一个单独的代理上实现多个隔离的环境（用户、用户组、交换机、队列 等），AMQP 提供了一个虚拟主机（virtual hosts - vhosts）的概念。这跟 <strong>Web servers 虚拟主机</strong>概念非常相似，这为 AMQP 实体提供了完全隔离的环境。当连接被建立的时候，AMQP 客户端来指定使用哪个虚拟主机。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Exchange交换机"><a href="#Exchange交换机" class="headerlink" title="Exchange交换机"></a>Exchange交换机</h3><p>​    交换机是用来发送消息的 AMQP 实体。</p>
+<p>​    交换机拿到一个消息之后将它<strong>路由</strong>给一个或零个队列。</p>
+<p>​    它使用哪种路由算法是由<strong>交换机类型</strong>和<strong>绑定（Bindings）规则</strong>所决定的。</p>
+<h4 id="默认交换机"><a href="#默认交换机" class="headerlink" title="默认交换机"></a>默认交换机</h4><p>​    type:Default</p>
+<p>​    自动命名的直交换机</p>
+<h4 id="直连交换机"><a href="#直连交换机" class="headerlink" title="直连交换机"></a>直连交换机</h4><p>​    type:Direct</p>
+<p>​    Routing Key==Binding Key，严格匹配</p>
+<h4 id="扇形交换机"><a href="#扇形交换机" class="headerlink" title="扇形交换机"></a>扇形交换机</h4><p>​    type:Fanout</p>
+<p>​    把发送到该 Exchange 的消息路由到所有与它绑定的 Queue 中</p>
+<h4 id="主题交换机"><a href="#主题交换机" class="headerlink" title="主题交换机"></a>主题交换机</h4><p>​    type:Topic</p>
+<p>​    Routing Key==Binding Key，模糊匹配</p>
+<h4 id="头交换机"><a href="#头交换机" class="headerlink" title="头交换机"></a>头交换机</h4><p>​    type:Headers</p>
+<p>​    根据发送的消息内容中的 headers 属性进行匹配</p>
+<h3 id="Queue队列"><a href="#Queue队列" class="headerlink" title="Queue队列"></a>Queue队列</h3><ul>
+<li>队列属性 todo</li>
+<li>队列创建 todo</li>
+<li>队列持久化 todo</li>
+</ul>
+<h3 id="Consumer消费者"><a href="#Consumer消费者" class="headerlink" title="Consumer消费者"></a>Consumer消费者</h3><ul>
+<li>将消息投递给应用(push 模型)</li>
+<li>应用主动获取消息(pull 模型)</li>
+</ul>
+<h3 id="消息机制"><a href="#消息机制" class="headerlink" title="消息机制"></a>消息机制</h3><p>1）自动确认模式：当消息代理（broker）将消息发送给应用后立即删除。（使用 AMQP 方法：basic.deliver 或 basic.get-ok）</p>
+<p>2）显式确认模式：待应用（application）发送一个确认回执（acknowledgement）后再删除消息。（使用 AMQP 方法：basic.ack）</p>
+<h2 id="RabbitMQ"><a href="#RabbitMQ" class="headerlink" title="RabbitMQ"></a>RabbitMQ</h2><h1 id="使用MQ可能遇到的各种情况"><a href="#使用MQ可能遇到的各种情况" class="headerlink" title="使用MQ可能遇到的各种情况"></a>使用MQ可能遇到的各种情况</h1><h2 id="消息丢失怎么办？"><a href="#消息丢失怎么办？" class="headerlink" title="消息丢失怎么办？"></a>消息丢失怎么办？</h2><p>发生在哪里，出现问题如何去预防排查解决。</p>
+<ul>
+<li><p>Producer丢失</p>
+<p>就是生产者<strong>发送数据之前</strong>开启 RabbitMQ 事务<code>channel.txSelect</code>，然后发送消息，如果消息没有成功被 RabbitMQ 接收到，那么生产者会收到异常报错，此时就可以回滚事务<code>channel.txRollback</code>，然后重试发送消息；如果收到了消息，那么可以提交事务<code>channel.txCommit</code>。</p>
+<p>开启 <code>confirm</code> 模式，在生产者那里设置开启 <code>confirm</code> 模式之后，你每次写的消息都会分配一个唯一的 id，然后如果写入了 RabbitMQ 中，RabbitMQ 会给你回传一个 <code>ack</code> 消息，告诉你说这个消息 ok 了。如果 RabbitMQ 没能处理这个消息，会回调你的一个 <code>nack</code> 接口，告诉你这个消息接收失败，你可以重试。</p>
+</li>
+<li><p>MQ内存中丢失</p>
+<p><strong>开启 RabbitMQ 的持久化</strong></p>
+<p>注意，哪怕是你给 RabbitMQ 开启了持久化机制，也有一种可能，就是这个消息写到了 RabbitMQ 中，但是还没来得及持久化到磁盘上，结果不巧，此时 RabbitMQ 挂了，就会导致内存里的一点点数据丢失。</p>
+<p>所以，持久化可以跟生产者那边的 <code>confirm</code> 机制配合起来，只有消息被持久化到磁盘之后，才会通知生产者 <code>ack</code> 了，所以哪怕是在持久化到磁盘之前，RabbitMQ 挂了，数据丢了，生产者收不到 <code>ack</code>，你也是可以自己重发的。</p>
+</li>
+<li><p>Comsumer丢失</p>
+<ul>
+<li>关闭自动ack，开启应用系统发送ack回执。</li>
+</ul>
+</li>
+</ul>
+<h2 id="大量消息积压如何处理？"><a href="#大量消息积压如何处理？" class="headerlink" title="大量消息积压如何处理？"></a>大量消息积压如何处理？</h2><p>仅仅只修复consumer重新消费可能需要几小时</p>
+<ol>
+<li>修复consumer</li>
+<li>建立多个consumer进程去处理queue积压的数据</li>
+<li>恢复原有部署</li>
+</ol>
+<ul>
+<li>讨论：假如出现死循环Producer，也要去考虑是否是生产者的问题。</li>
+</ul>
+<h2 id="消息过期失效？"><a href="#消息过期失效？" class="headerlink" title="消息过期失效？"></a>消息过期失效？</h2><ul>
+<li>RabbitMQ可以设置TTL过期时间</li>
+<li>在用户低峰期将过期的数据查出后重新写入MQ</li>
+</ul>
+<h2 id="如何保证消息的顺序性？"><a href="#如何保证消息的顺序性？" class="headerlink" title="如何保证消息的顺序性？"></a>如何保证消息的顺序性？</h2><p>一个queue，多个consumer</p>
+<ul>
+<li>每个consumer对应一个queue，consumer可以用队列排序</li>
+</ul>
+<h2 id="如何保证消息不被重复消费？即保证数据幂等性"><a href="#如何保证消息不被重复消费？即保证数据幂等性" class="headerlink" title="如何保证消息不被重复消费？即保证数据幂等性"></a>如何保证消息不被重复消费？即保证数据<strong>幂等性</strong></h2><p>结合业务，多个层面控制</p>
+<ul>
+<li>设置每个请求的全局id</li>
+<li>数据库设置唯一键</li>
+<li>先对数据校验再做操作</li>
+</ul>
+<h1 id="会后复习资料"><a href="#会后复习资料" class="headerlink" title="会后复习资料"></a>会后复习资料</h1><ul>
+<li><a href="https://www.jianshu.com/p/4491cba335d1" target="_blank" rel="noopener">消息中间件</a></li>
+<li><a href="https://blog.csdn.net/weixin_37641832/article/details/83270778#Consumer_128" target="_blank" rel="noopener">AMQP</a></li>
+<li><a href="https://www.cnblogs.com/vipstone/p/9275256.html" target="_blank" rel="noopener">RabbitMQ</a></li>
+</ul>
+<h1 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h1><ul>
+<li><p>要保证库存一致性的时候，即库存商品不会超买超卖，MQ很难做到这一点。MQ不适用于秒杀业务</p>
+</li>
+<li><p>当消费端处于unack时，消费端会锁定队列中前<strong>3（默认值）</strong>个的消息。</p>
+<ul>
+<li><code>$ch-&gt;setPrefetchCount($count); //设定最大unacked消息的条数，默认为3；值得注意的是，设置为0时表示无限制</code></li>
+</ul>
+</li>
+<li><p>消息不被重复消费：</p>
+<ul>
+<li>使用uuid保证请求唯一性</li>
+<li>Redis天然的幂等性</li>
+</ul>
+</li>
+<li><p>关于Channel信道：</p>
+<p>在AMQP模型中，我们不需要通过建立太多的TCP连接来实现。假如针对每一个AMQP连接都建立一个TCP连接的话，会占用大量的系统资源。对此，AMQP提供了通道（channel）机制。即，共享一个TCP连接，可创建多个通道。</p>
+</li>
+<li><p>关于vhost虚拟主机：</p>
+<p>为了在一个单独的代理上实现多个隔离的环境（用户、用户组、交换机、队列 等）</p>
+</li>
+<li><p>关于消息丢失的三种情况，生产者发送消息丢失过程中使用confirm模式的解释</p>
+<p><a href="https://www.cnblogs.com/vipstone/p/9350075.html" target="_blank" rel="noopener">RabbitMQ系列四</a></p>
+</li>
+</ul>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><p><strong>consumer.php</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line">$conn = <span class="keyword">new</span> AMQPConnection($config);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    $conn-&gt;connect();</span><br><span class="line">&#125; <span class="keyword">catch</span> (\AMQPConnectionException $AMQPConnectionException) &#123;</span><br><span class="line">    <span class="keyword">exit</span>(<span class="string">'connect failed'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建一个channel</span></span><br><span class="line">$ch = <span class="keyword">new</span> AMQPChannel($conn);</span><br><span class="line">$ch.basic_qos(prefetch_count=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建一个交换机</span></span><br><span class="line">$ex = <span class="keyword">new</span> AMQPExchange($ch);</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明路由键</span></span><br><span class="line">$routingKey = <span class="string">'key_1'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明交换机名称</span></span><br><span class="line">$exchangeName = <span class="string">'exchange_1'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置交换机名称</span></span><br><span class="line">$ex-&gt;setName($exchangeName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置交换机类型</span></span><br><span class="line"><span class="comment">//AMQP_EX_TYPE_DIRECT:直连交换机</span></span><br><span class="line"><span class="comment">//AMQP_EX_TYPE_FANOUT:扇形交换机</span></span><br><span class="line"><span class="comment">//AMQP_EX_TYPE_HEADERS:头交换机</span></span><br><span class="line"><span class="comment">//AMQP_EX_TYPE_TOPIC:主题交换机</span></span><br><span class="line">$ex-&gt;setType(AMQP_EX_TYPE_DIRECT);</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置交换机持久</span></span><br><span class="line">$ex-&gt;setFlags(AMQP_DURABLE);</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明交换机</span></span><br><span class="line">$ex-&gt;declareExchange();</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建一个消息队列</span></span><br><span class="line">$q = <span class="keyword">new</span> AMQPQueue($ch);</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置队列名称</span></span><br><span class="line">$q-&gt;setName(<span class="string">'queue_1'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置队列持久</span></span><br><span class="line">$q-&gt;setFlags(AMQP_DURABLE);</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明消息队列</span></span><br><span class="line">$q-&gt;declareQueue();</span><br><span class="line"></span><br><span class="line"><span class="comment">//交换机和队列通过$routingKey进行绑定</span></span><br><span class="line">$q-&gt;bind($ex-&gt;getName(), $routingKey);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//接收消息并进行处理的回调方法</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">receive</span><span class="params">($envelope, $queue)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//休眠两秒，</span></span><br><span class="line">    sleep(<span class="number">2</span>);</span><br><span class="line">    <span class="comment">//echo消息内容</span></span><br><span class="line">    <span class="keyword">echo</span> $envelope-&gt;getBody() . <span class="string">"\n"</span>;</span><br><span class="line">    <span class="comment">//显式确认，队列收到消费者显式确认后，会删除该消息</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'without ack'</span>;</span><br><span class="line">   <span class="comment">//$queue-&gt;ack($envelope-&gt;getDeliveryTag());</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置消息队列消费者回调方法，并进行阻塞</span></span><br><span class="line">$q-&gt;consume(<span class="string">"receive"</span>);</span><br><span class="line"><span class="comment">//$q-&gt;consume("receive", AMQP_AUTOACK);//隐式确认,不推荐</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2019/09/21/rabbitMQ/" title="RabbitMQ">http://ajsonx.github.io/2019/09/21/rabbitMQ/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/RabbitMQ/" rel="tag"># RabbitMQ</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/25/new-paints/" rel="prev" title="新裤子乐队--没有理想的人不伤心">
+      <i class="fa fa-chevron-left"></i> 新裤子乐队--没有理想的人不伤心
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/20/http-proxy/" rel="next" title="HTTP代理的知识">
+      HTTP代理的知识 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#消息队列中间件"><span class="nav-number">1.</span> <span class="nav-text">消息队列中间件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么使用MQ？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么使用MQ？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用MQ的劣势"><span class="nav-number">1.2.</span> <span class="nav-text">使用MQ的劣势</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#深入了解RabbitMQ"><span class="nav-number">2.</span> <span class="nav-text">深入了解RabbitMQ</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AMQP"><span class="nav-number">2.1.</span> <span class="nav-text">AMQP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AMQP协议"><span class="nav-number">2.1.1.</span> <span class="nav-text">AMQP协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Exchange交换机"><span class="nav-number">2.1.2.</span> <span class="nav-text">Exchange交换机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#默认交换机"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">默认交换机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#直连交换机"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">直连交换机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扇形交换机"><span class="nav-number">2.1.2.3.</span> <span class="nav-text">扇形交换机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#主题交换机"><span class="nav-number">2.1.2.4.</span> <span class="nav-text">主题交换机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#头交换机"><span class="nav-number">2.1.2.5.</span> <span class="nav-text">头交换机</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Queue队列"><span class="nav-number">2.1.3.</span> <span class="nav-text">Queue队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer消费者"><span class="nav-number">2.1.4.</span> <span class="nav-text">Consumer消费者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消息机制"><span class="nav-number">2.1.5.</span> <span class="nav-text">消息机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RabbitMQ"><span class="nav-number">2.2.</span> <span class="nav-text">RabbitMQ</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用MQ可能遇到的各种情况"><span class="nav-number">3.</span> <span class="nav-text">使用MQ可能遇到的各种情况</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#消息丢失怎么办？"><span class="nav-number">3.1.</span> <span class="nav-text">消息丢失怎么办？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大量消息积压如何处理？"><span class="nav-number">3.2.</span> <span class="nav-text">大量消息积压如何处理？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#消息过期失效？"><span class="nav-number">3.3.</span> <span class="nav-text">消息过期失效？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何保证消息的顺序性？"><span class="nav-number">3.4.</span> <span class="nav-text">如何保证消息的顺序性？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何保证消息不被重复消费？即保证数据幂等性"><span class="nav-number">3.5.</span> <span class="nav-text">如何保证消息不被重复消费？即保证数据幂等性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#会后复习资料"><span class="nav-number">4.</span> <span class="nav-text">会后复习资料</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#讨论"><span class="nav-number">5.</span> <span class="nav-text">讨论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码"><span class="nav-number">6.</span> <span class="nav-text">代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

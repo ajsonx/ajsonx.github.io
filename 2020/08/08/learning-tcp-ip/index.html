@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="电子科技大学-网络教育课程-杨宁老师的《TCP/IP详解》听课笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP&#x2F;IP协议详解">
+<meta property="og:url" content="http://ajsonx.github.io/2020/08/08/learning-tcp-ip/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="电子科技大学-网络教育课程-杨宁老师的《TCP/IP详解》听课笔记">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-08-08T09:30:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TCP&#x2F;IP协议详解">
+<meta name="twitter:description" content="电子科技大学-网络教育课程-杨宁老师的《TCP/IP详解》听课笔记">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/08/08/learning-tcp-ip/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>TCP/IP协议详解 | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/08/08/learning-tcp-ip/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TCP/IP协议详解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-08 17:30:54" itemprop="dateCreated datePublished" datetime="2020-08-08T17:30:54+08:00">2020-08-08</time>
+            </span>
+
+          
+            <span id="/2020/08/08/learning-tcp-ip/" class="post-meta-item leancloud_visitors" data-flag-title="TCP/IP协议详解" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/08/learning-tcp-ip/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/08/learning-tcp-ip/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>电子科技大学-网络教育课程-杨宁老师的《TCP/IP详解》听课笔记</p>
+<a id="more"></a>
+
+<hr>
+<h1 id="1～3"><a href="#1～3" class="headerlink" title="1～3"></a>1～3</h1><p>引言、OSI模型与TCP/IP、底层网络技术</p>
+<h2 id="协议和标准"><a href="#协议和标准" class="headerlink" title="协议和标准"></a>协议和标准</h2><ul>
+<li>What is 协议<ul>
+<li>一组控制数据通信的规则</li>
+<li>三要素：语法，语义，时序（控制何时通信）</li>
+</ul>
+</li>
+<li>What is 标准<ul>
+<li>一致同意的规则</li>
+<li>种类：1. 事实上的标准——实际或习惯 2. 合法标准——组织制定的法律或规章</li>
+</ul>
+</li>
+<li>标准化组织有哪些<ul>
+<li>ISO（国际标准化组织）</li>
+<li>ITU-T</li>
+<li>ANSI（美国国家标准化局）</li>
+<li>IEEE（电气电子工程师学会）</li>
+<li>EIA</li>
+</ul>
+</li>
+<li>Internet标准：RFC</li>
+</ul>
+<h2 id="OSI模型和TCP-IP协议族"><a href="#OSI模型和TCP-IP协议族" class="headerlink" title="OSI模型和TCP/IP协议族"></a>OSI模型和TCP/IP协议族</h2><ul>
+<li>什么是OSI参考模型<ul>
+<li>ISO组织制定的参考模型，Open System Interconnection</li>
+<li>使两个不同的系统能够通信的一套参考标准</li>
+</ul>
+</li>
+<li>OSI模型的层次功能<ul>
+<li>七层及其功能<ul>
+<li>应用层：为用户提供网络处理的应用</li>
+<li>表示层：数据编码、转换</li>
+<li>会话层：管理会话的过程</li>
+<li>传输层：端到端的数据传输</li>
+<li>网络层：编址、寻址</li>
+<li>数据链路层：送交给网络介质</li>
+<li>物理层：二进制信号的物理传输</li>
+</ul>
+</li>
+<li>服务：下层为上一层提供服务</li>
+<li>接口：不同层之间，服务的使用和提供</li>
+<li>对等实体：存在通信关系的对等层实体才是对等实体</li>
+<li>对等层通信：只有对等实体之间才能通过对等层协议进行通信</li>
+<li>PDU：Protocol Data Unit. 协议数据单元，对等层之间传输的数据</li>
+<li>帧、分组、数据段、数据分别表示的是第2、3、4、（5 &amp; 6 &amp; 7）层的PDU</li>
+</ul>
+</li>
+<li>TCP/IP协议族<ul>
+<li>层次功能<ul>
+<li>应用层</li>
+<li>传输层</li>
+<li>网际（Internet）层</li>
+<li>网络接入层</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="编址"><a href="#编址" class="headerlink" title="编址"></a>编址</h2><h3 id="Internet-网常用的三个地址概念"><a href="#Internet-网常用的三个地址概念" class="headerlink" title="Internet 网常用的三个地址概念"></a>Internet 网常用的三个地址概念</h3><ul>
+<li>物理地址<ul>
+<li>标识通信节点</li>
+<li>由所属LAN或WAN指定</li>
+<li>LAN/WAN内唯一</li>
+<li>链路地址/硬件地址</li>
+<li>数据链路层上的，不是物理层</li>
+<li>例子：0x0005.5D06.1418（MAC地址）</li>
+</ul>
+</li>
+<li>IP地址<ul>
+<li>网络层上的地址</li>
+<li>标识通信节点的网络连接（物理地址是在物理网内部之间，而IP地址是在不同的物理网之间标识通信节点）</li>
+<li>Internet内唯一</li>
+<li>是互联网上的地址</li>
+</ul>
+</li>
+<li>端口地址<ul>
+<li>标识通信进程</li>
+<li>操作系统指定</li>
+<li>一台计算机内唯一</li>
+<li>例如：21（FTP）、22（SSH）、23（Telnet）、25（SMTP）、80（HTTP）</li>
+<li>传输层</li>
+</ul>
+</li>
+</ul>
+<h3 id="目的地址的分类"><a href="#目的地址的分类" class="headerlink" title="目的地址的分类"></a>目的地址的分类</h3><ul>
+<li>单播<ul>
+<li>一个接收者</li>
+<li>除了下面两个之外的地址都可以作为单播地址</li>
+</ul>
+</li>
+<li>多播<ul>
+<li>一组接收者</li>
+<li>物理地址：前面24bit必须是0x0100.5Exx.xxxx；IP地址中：224.0.0.0～239.255.255.255都是多播地址的可用范围</li>
+<li>IGMP（Internet Group Management Protocol）协议</li>
+</ul>
+</li>
+<li>广播<ul>
+<li>网络中的所有系统</li>
+<li>广播地址：物理地址全1：（0xFFFF.FFFF.FFFF）；IP地址全1（255.255.255.255）</li>
+</ul>
+</li>
+</ul>
+<h3 id="TCP-IP的版本"><a href="#TCP-IP的版本" class="headerlink" title="TCP/IP的版本"></a>TCP/IP的版本</h3><p>主要是IP协议的改动，IP协议是TCP/IP协议的核心</p>
+<ul>
+<li>Version 4<ul>
+<li>地址空间不足和低效率：32位的地址（后来是IPv6）</li>
+<li>对服务质量和安全方面支持较弱（音视频传输等，后来出现了UDP）</li>
+</ul>
+</li>
+<li>Version 5<ul>
+<li>基于OSI模型</li>
+<li>层次改变大，代价高，没有实际使用</li>
+</ul>
+</li>
+<li>Version 6<ul>
+<li>仅改动了网络层协议：IPv6、ICMPv6</li>
+<li>扩大了地址空间：128位的地址</li>
+<li>改进了版本4的弱点</li>
+</ul>
+</li>
+</ul>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><ul>
+<li><p>对分层网络协议体系的理解</p>
+<ul>
+<li>不同节点：层次组成不同，作用不同</li>
+<li>横向理解：虚通信、对等实体、协议、PDU</li>
+<li>纵向理解：封装与解封、服务、接口</li>
+</ul>
+</li>
+<li><p>TCP/IP</p>
+<ul>
+<li>层次：掌握与OSI模型的对应关系</li>
+<li>协议：掌握主要协议及其所在层次</li>
+</ul>
+</li>
+<li><p>地址</p>
+<ul>
+<li>掌握物理、IP、端口地址：作用、所在层次</li>
+<li>掌握单播、多播、广播地址：作用</li>
+</ul>
+</li>
+</ul>
+<h2 id="底层网络技术"><a href="#底层网络技术" class="headerlink" title="底层网络技术"></a>底层网络技术</h2><h3 id="传输介质"><a href="#传输介质" class="headerlink" title="传输介质"></a>传输介质</h3><p>不同的传输介质在物理层上（比特流）有不同的实现（电流高低、光的强弱）</p>
+<ul>
+<li>有线介质——导线管（导向媒体）<ul>
+<li>双绞线</li>
+<li>同轴电缆（金属铜导线，电流）</li>
+<li>光纤（玻璃或塑料、光）</li>
+</ul>
+</li>
+<li>无线介质——电磁波（非导向媒体、无方向的）<ul>
+<li>8个频段（无线电、红外）</li>
+</ul>
+</li>
+</ul>
+<h3 id="局域网（LAN）"><a href="#局域网（LAN）" class="headerlink" title="局域网（LAN）"></a>局域网（LAN）</h3><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>允许一些独立设备在受限地理范围内彼此都能直接通信（有些过时）</p>
+<p>共享介质型——广播式的通信特征</p>
+<h4 id="技术"><a href="#技术" class="headerlink" title="技术"></a>技术</h4><ul>
+<li>Ethernet（以太网）<ul>
+<li>接入方法：CSMA/CD（载波监听多路访问方式），监听信道是否空闲。检查是否会发生冲突，一旦发生冲突，放弃发送数据，物理网段上的数据都不再有效</li>
+<li>地址：6位</li>
+<li>在局域网中又将数据链路层分为了两层：逻辑链路控制子层（靠近网络层），介质访问控制子层（靠近物理层，只有局域网中才有MAC地址的概念，广域网等叫物理地址）</li>
+<li>帧（数据链路层中包的单位）：数据帧<ul>
+<li>根据RFC标准制定的不同，帧格式也有所不同，例：RFC 984 和RFC 1042 </li>
+<li>RFC894 : Preamble｜SFD|Des. Addr|Source Addr|Type|Data|FCS</li>
+<li>这些帧是对网络层数据（Data）的封装。在IEEE802.2/802.3封装的帧格式中，Data中有3个字节的LLC数据，因为局域网中分了LLC子层和MAC子层，数据帧的封装是靠近物理层的MAC子层，3个字节的LLC是提供给LLC子层使用，用于CSMA/CD等。</li>
+<li>根据Source Addr. 后的字节来判断（可能用到2个，也可能4个。目前在用的以太网帧格式就几种）</li>
+<li>对于物理层来说，这些都是bit流，帧格式是没有意义的。但帧格式的前导符以及帧定位符来告诉物理层应该从哪里开始构成一个帧。最后送交给数据链路层。</li>
+</ul>
+</li>
+<li>除视频课之外我详细了解了下<a href="https://blog.csdn.net/frank_jb/article/details/40626239?utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase" target="_blank" rel="noopener">以太网在不同工作模式下的区别</a>：以太网发展初期，共享式以太网下的工作模式是半双工，到了后来出现的是交换式以太网，采用的是全双工的工作模式。全双工模式下，网卡可以同时发送和接受数据包，并且交换机与PC机直连，通信介质是使用双绞线，所以不存在什么信道冲突。也就无需采用CSMA/CD机制。</li>
+</ul>
+</li>
+<li>Token Ring &amp; FDDI （了解即可，是一种无冲突的共享介质型网络）<ul>
+<li>令牌传递</li>
+</ul>
+</li>
+</ul>
+<h3 id="交换"><a href="#交换" class="headerlink" title="交换"></a>交换</h3><p>交换系统：有多个输入和输出的“黑盒子”</p>
+<h4 id="交换技术"><a href="#交换技术" class="headerlink" title="交换技术"></a>交换技术</h4><ul>
+<li><p>电路交换（电话系统）</p>
+<ul>
+<li>建立连接</li>
+<li>数据传输：每个主机都有自己独立的信道，通信的两个节点之间独占介质，其他站点无法与这两个节点通信。如果有公共介质，可能采用了时分复用技术或者频分复用技术。</li>
+<li>拆除连接</li>
+</ul>
+</li>
+<li><p>分组交换</p>
+<ol>
+<li><p>数据报方式：数据发送之前不需要建立连接。将数据分组，每个组独立的发送。数据可能丢失，到达先后次序也不一致。</p>
+</li>
+<li><p>虚电路方式：需要建立连接，沿着一条路发送。</p>
+<ul>
+<li>电路交换数据传输是以流的单位，虚电路是以分组的单位</li>
+<li>电路是物理上的连接，虚电路是逻辑上的一条连接</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>报文交换：和分组交换中数据报方式差不多，分组交换中将数据报分为多个组，而报文交换是以数据报为单位。</p>
+</li>
+</ul>
+<h3 id="广域网（WAN）"><a href="#广域网（WAN）" class="headerlink" title="广域网（WAN）"></a>广域网（WAN）</h3><h4 id="概念-1"><a href="#概念-1" class="headerlink" title="概念"></a>概念</h4><ul>
+<li>很大的地理范围，长距离传输。</li>
+<li>交换网络——点到点式</li>
+</ul>
+<h4 id="技术-1"><a href="#技术-1" class="headerlink" title="技术"></a>技术</h4><p>很多，没详细讲。</p>
+<p>局域网和广域网的比较：知识点都讲过。</p>
+<h3 id="连接设备"><a href="#连接设备" class="headerlink" title="连接设备"></a>连接设备</h3><ul>
+<li>转发器/集线器：仅在物理层，再生放大网络信号。</li>
+<li>网桥/交换机：<ul>
+<li>网桥可以用软件来实现，交换机是从硬件来实现。不限制连接网段的个数。</li>
+<li>网桥根据数据帧的内容转发数据给相邻的其他网络</li>
+<li>网桥可以连接传输速率不同的网络</li>
+<li>网桥将数据存储于内存，再重新生成信号作为一个全新的帧去转发。</li>
+<li>具备地址（MAC、物理、硬件、适配器）自学机制和过滤功能控制网络流量</li>
+<li>还可以检查数据帧中FCS的值，校验数据。</li>
+</ul>
+</li>
+<li>路由器：<ul>
+<li>跟据IP地址进行转发，连接不同的数据链路</li>
+</ul>
+</li>
+<li>网关/4～7层交换机：<ul>
+<li>负载均衡器</li>
+<li>数据转换</li>
+<li>特殊应用访问加速，带宽控制</li>
+<li>防火墙</li>
+</ul>
+</li>
+</ul>
+<h1 id="4～5（IP编址技术）"><a href="#4～5（IP编址技术）" class="headerlink" title="4～5（IP编址技术）"></a>4～5（IP编址技术）</h1><p>IP编址、构成子网和超网</p>
+<h2 id="第四章"><a href="#第四章" class="headerlink" title="第四章"></a>第四章</h2><p>IP地址：唯一标识互联网上的主机和路由器</p>
+<p>路由器需要连接不同的网络、每个接口都要分配一个IP地址</p>
+<p>主机标识符</p>
+<ul>
+<li>Name：字符串，可读性强（DNS）</li>
+<li>Addr ：二进制，软件效率高（IP地址）</li>
+<li>Route：怎样到达（路由协议）</li>
+</ul>
+<h3 id="IP地址结构"><a href="#IP地址结构" class="headerlink" title="IP地址结构"></a>IP地址结构</h3><ul>
+<li><p>32Bit二进制地址</p>
+</li>
+<li><p>模拟物理网的编址机制</p>
+</li>
+<li><p>层次编址，而物理地址是平面编址</p>
+</li>
+<li><p>Network id + Host id：一个用来标识网络，一个标识主机。网络标识区分数据链路层的不同段。</p>
+</li>
+<li><p>点分十进制。实际上使用是不分的。</p>
+</li>
+</ul>
+<h3 id="IP地址分类"><a href="#IP地址分类" class="headerlink" title="IP地址分类"></a>IP地址分类</h3><h4 id="A类地址"><a href="#A类地址" class="headerlink" title="A类地址"></a>A类地址</h4><ul>
+<li>标识位：前一位，值为0</li>
+<li>Netid：7位</li>
+<li>Hostid：24位</li>
+<li>范围：0.0.0.0 ～ 127.255.255.255</li>
+</ul>
+<h4 id="B类"><a href="#B类" class="headerlink" title="B类"></a>B类</h4><ul>
+<li>标识位：前两位，值为 10</li>
+<li>Netid：14</li>
+<li>Hostid：16</li>
+<li>范围：128.0.0.0 ～ 191.255.255.255</li>
+</ul>
+<h4 id="C类"><a href="#C类" class="headerlink" title="C类"></a>C类</h4><ul>
+<li>标识位：前三位，值为110</li>
+<li>Netid：21</li>
+<li>Hostid：8</li>
+<li>范围：192.0.0.0 ～ 223.255.255.255</li>
+</ul>
+<h4 id="D类"><a href="#D类" class="headerlink" title="D类"></a>D类</h4><ul>
+<li>标识位：前四位，值为1110</li>
+<li>标识多播应用</li>
+<li>无网络和主机标识</li>
+<li>范围：224.0.0.0 ～ 239.255.255.255</li>
+</ul>
+<h4 id="E类"><a href="#E类" class="headerlink" title="E类"></a>E类</h4><ul>
+<li>标识位：前四位，值为1111</li>
+<li>无网络和主机标识</li>
+<li>范围：240.0.0.0 ～ 255.255.255.255</li>
+<li>用于研究</li>
+</ul>
+<h3 id="多接口设备"><a href="#多接口设备" class="headerlink" title="多接口设备"></a>多接口设备</h3><ul>
+<li>多接口计算机：可以连接到多个网络</li>
+<li>路由器：必须连接到多个网络、每个网络连接分配一个IP地址，可属于不同的类</li>
+</ul>
+<h3 id="特殊地址"><a href="#特殊地址" class="headerlink" title="特殊地址"></a>特殊地址</h3><ul>
+<li>网络地址：标识整个网络。既不能作为源，也不能作为目的地址。<strong><em>Netid特定，Hostid全0</em></strong></li>
+<li>直接广播地址：标识特定网络的广播。不能作为源，可以作为目的地址。存在安全问题，路由器上设置为不转发。<strong><em>Netid特定，Hostid全1</em></strong></li>
+<li>受限广播地址：标识本地网络的广播。该源所在的网络内广播。<strong><em>Netid和Hostid全1</em></strong></li>
+<li>本网络上的本主机：不知道自身ip地址时，发送请求分组使用。<strong><em>0.0.0.0</em></strong></li>
+<li>本网络的特定主机：标识某网络的主机，实际不使用。<strong><em>Netid全0，Hostid不为0</em></strong></li>
+<li>环回地址：网络层发现IP地址是环回地址时，直接回传给传输层，不经过物理层。<strong><em>Netid全1，Hostid特定</em></strong> 例：127.0.0.1</li>
+</ul>
+<h3 id="互联网实例"><a href="#互联网实例" class="headerlink" title="互联网实例"></a>互联网实例</h3><ul>
+<li>一个物理接口可以有多个逻辑连接，但是多个物理连接不能共用一个逻辑连接。</li>
+</ul>
+<h3 id="单播、多播和广播地址"><a href="#单播、多播和广播地址" class="headerlink" title="单播、多播和广播地址"></a>单播、多播和广播地址</h3><ul>
+<li>多播：一对多。使用D类地址。应用：电话会议</li>
+</ul>
+<h3 id="申请IP地址"><a href="#申请IP地址" class="headerlink" title="申请IP地址"></a>申请IP地址</h3><p>知识点偏课本的性质，不记录了。</p>
+<h2 id="第五章·11"><a href="#第五章·11" class="headerlink" title="第五章·11"></a>第五章·11</h2><p>Classful IP 编址的缺陷：</p>
+<ul>
+<li>C类：少于255台（255-2）主机的网络</li>
+<li>B类：介于255～65535台主机的网络</li>
+<li>A类：超过65535台</li>
+</ul>
+<p>网络标识相同的计算机必须同属于同一个链路，会造成地址浪费过大的情况</p>
+<p>解决方案：子网划分、超网划分。</p>
+<h3 id="构成子网"><a href="#构成子网" class="headerlink" title="构成子网"></a>构成子网</h3><p>子网划分是将主机地址（HostID）的部分用作子网地址</p>
+<p>例如B类网：142.14.0.0 划分为 142.14.2.0 、142.14.7.0等子网</p>
+<ul>
+<li>不能用首字节判定网络大小</li>
+<li>字节边界没有意义</li>
+</ul>
+<p><strong><em>因此引入了掩码</em></strong></p>
+<ul>
+<li>表示网络或子网的大小</li>
+<li>32bit二进制数<ul>
+<li>网络或子网（Netid+Subnetid）部分为1</li>
+<li>主机部分为0</li>
+</ul>
+</li>
+</ul>
+<p>例如：C类网络IP地址：202.115.12.0、掩码(Mask)：255.255.255.192 可以得出子网大小  64 - 2 = 62 </p>
+<h4 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h4><ul>
+<li>网络地址<ul>
+<li>特定Net id</li>
+<li>全0 Subnet id + 全0 Host id</li>
+<li>例如：172.16.0.0 / 172.16.0.255 -&gt;广播地址</li>
+</ul>
+</li>
+<li>子网地址<ul>
+<li>特定Net id + 特定 Subnet id</li>
+<li>全0 Host id</li>
+<li>例如：172.16.16.0</li>
+</ul>
+</li>
+<li>主机地址<ul>
+<li>全是特定</li>
+<li>例如：172.16.16.201</li>
+</ul>
+</li>
+</ul>
+<h3 id="掩码"><a href="#掩码" class="headerlink" title="掩码"></a>掩码</h3><h4 id="掩码表示"><a href="#掩码表示" class="headerlink" title="掩码表示"></a>掩码表示</h4><ul>
+<li>点分十进制表示：255.255.255.192</li>
+<li>位数表示： /26</li>
+</ul>
+<h4 id="掩码运算"><a href="#掩码运算" class="headerlink" title="掩码运算"></a>掩码运算</h4><p>&amp;（与）运算</p>
+<ul>
+<li>Net address = IP &amp; Mask</li>
+<li>Host address = IP &amp; Mask的反码</li>
+</ul>
+<h3 id="子网构成举例"><a href="#子网构成举例" class="headerlink" title="子网构成举例"></a>子网构成举例</h3><h1 id="6～8（网络层协议）"><a href="#6～8（网络层协议）" class="headerlink" title="6～8（网络层协议）"></a>6～8（网络层协议）</h1><h1 id="9～10（传输层协议）"><a href="#9～10（传输层协议）" class="headerlink" title="9～10（传输层协议）"></a>9～10（传输层协议）</h1><h1 id="11（客户服务器模型）"><a href="#11（客户服务器模型）" class="headerlink" title="11（客户服务器模型）"></a>11（客户服务器模型）</h1><h1 id="12～14（应用层协议）"><a href="#12～14（应用层协议）" class="headerlink" title="12～14（应用层协议）"></a>12～14（应用层协议）</h1>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/08/08/learning-tcp-ip/" title="TCP/IP协议详解">http://ajsonx.github.io/2020/08/08/learning-tcp-ip/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/17/php-obj-ref/" rel="prev" title="PHP7中对象的引用传递">
+      <i class="fa fa-chevron-left"></i> PHP7中对象的引用传递
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1～3"><span class="nav-number">1.</span> <span class="nav-text">1～3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#协议和标准"><span class="nav-number">1.1.</span> <span class="nav-text">协议和标准</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OSI模型和TCP-IP协议族"><span class="nav-number">1.2.</span> <span class="nav-text">OSI模型和TCP/IP协议族</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编址"><span class="nav-number">1.3.</span> <span class="nav-text">编址</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Internet-网常用的三个地址概念"><span class="nav-number">1.3.1.</span> <span class="nav-text">Internet 网常用的三个地址概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#目的地址的分类"><span class="nav-number">1.3.2.</span> <span class="nav-text">目的地址的分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP-IP的版本"><span class="nav-number">1.3.3.</span> <span class="nav-text">TCP/IP的版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">1.3.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层网络技术"><span class="nav-number">1.4.</span> <span class="nav-text">底层网络技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传输介质"><span class="nav-number">1.4.1.</span> <span class="nav-text">传输介质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局域网（LAN）"><span class="nav-number">1.4.2.</span> <span class="nav-text">局域网（LAN）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#技术"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">技术</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交换"><span class="nav-number">1.4.3.</span> <span class="nav-text">交换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#交换技术"><span class="nav-number">1.4.3.1.</span> <span class="nav-text">交换技术</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#广域网（WAN）"><span class="nav-number">1.4.4.</span> <span class="nav-text">广域网（WAN）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概念-1"><span class="nav-number">1.4.4.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#技术-1"><span class="nav-number">1.4.4.2.</span> <span class="nav-text">技术</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接设备"><span class="nav-number">1.4.5.</span> <span class="nav-text">连接设备</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4～5（IP编址技术）"><span class="nav-number">2.</span> <span class="nav-text">4～5（IP编址技术）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#第四章"><span class="nav-number">2.1.</span> <span class="nav-text">第四章</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IP地址结构"><span class="nav-number">2.1.1.</span> <span class="nav-text">IP地址结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IP地址分类"><span class="nav-number">2.1.2.</span> <span class="nav-text">IP地址分类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#A类地址"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">A类地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#B类"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">B类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#C类"><span class="nav-number">2.1.2.3.</span> <span class="nav-text">C类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#D类"><span class="nav-number">2.1.2.4.</span> <span class="nav-text">D类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#E类"><span class="nav-number">2.1.2.5.</span> <span class="nav-text">E类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多接口设备"><span class="nav-number">2.1.3.</span> <span class="nav-text">多接口设备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特殊地址"><span class="nav-number">2.1.4.</span> <span class="nav-text">特殊地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#互联网实例"><span class="nav-number">2.1.5.</span> <span class="nav-text">互联网实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#单播、多播和广播地址"><span class="nav-number">2.1.6.</span> <span class="nav-text">单播、多播和广播地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#申请IP地址"><span class="nav-number">2.1.7.</span> <span class="nav-text">申请IP地址</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第五章·11"><span class="nav-number">2.2.</span> <span class="nav-text">第五章·11</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构成子网"><span class="nav-number">2.2.1.</span> <span class="nav-text">构成子网</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#术语"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">术语</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#掩码"><span class="nav-number">2.2.2.</span> <span class="nav-text">掩码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#掩码表示"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">掩码表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#掩码运算"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">掩码运算</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子网构成举例"><span class="nav-number">2.2.3.</span> <span class="nav-text">子网构成举例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6～8（网络层协议）"><span class="nav-number">3.</span> <span class="nav-text">6～8（网络层协议）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#9～10（传输层协议）"><span class="nav-number">4.</span> <span class="nav-text">9～10（传输层协议）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#11（客户服务器模型）"><span class="nav-number">5.</span> <span class="nav-text">11（客户服务器模型）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#12～14（应用层协议）"><span class="nav-number">6.</span> <span class="nav-text">12～14（应用层协议）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>

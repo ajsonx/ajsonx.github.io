@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ajsonx.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","width":250,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="祝大家拿到好offer  近期面试心得 一年的PHPer面试复习手册 深圳PHP岗位面经">
+<meta name="keywords" content="PHP Mysql Algorithm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一年经验的PHP程序员面试准备以及面筋">
+<meta property="og:url" content="http://ajsonx.github.io/2020/03/12/first-year-interview/index.html">
+<meta property="og:site_name" content="Coding Life">
+<meta property="og:description" content="祝大家拿到好offer  近期面试心得 一年的PHPer面试复习手册 深圳PHP岗位面经">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200312/b_tree.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200312/b%2B_tree.png">
+<meta property="og:updated_time" content="2020-03-12T07:13:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一年经验的PHP程序员面试准备以及面筋">
+<meta name="twitter:description" content="祝大家拿到好offer  近期面试心得 一年的PHPer面试复习手册 深圳PHP岗位面经">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200312/b_tree.png">
+
+<link rel="canonical" href="http://ajsonx.github.io/2020/03/12/first-year-interview/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>一年经验的PHP程序员面试准备以及面筋 | Coding Life</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Coding Life</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-留言板">
+
+    <a href="/guestbook" rel="section"><i class="fa fa-fw fa-newspaper-o"></i>留言板</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://ajsonx.github.io/2020/03/12/first-year-interview/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ZHJ.jpeg">
+      <meta itemprop="name" content="hjx">
+      <meta itemprop="description" content="this is life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding Life">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一年经验的PHP程序员面试准备以及面筋
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-12 15:13:58" itemprop="dateCreated datePublished" datetime="2020-03-12T15:13:58+08:00">2020-03-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试/" itemprop="url" rel="index"><span itemprop="name">面试</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/12/first-year-interview/" class="post-meta-item leancloud_visitors" data-flag-title="一年经验的PHP程序员面试准备以及面筋" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/12/first-year-interview/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/12/first-year-interview/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>祝大家拿到好offer</p>
+<ol>
+<li>近期面试心得</li>
+<li>一年的PHPer面试复习手册</li>
+<li>深圳PHP岗位面经</li>
+</ol>
+<a id="more"></a>
+<hr>
+<ul>
+<li>有些问题抛出来了，没有回答。</li>
+<li>还有一部分基础知识需要靠积累，没有整理出来。</li>
+<li>面试还会继续，本篇文章今年内不定时更新。</li>
+</ul>
+<h1 id="自我介绍-别紧张-讲慢点-开录音-警惕面试官挖坑-大胆讲"><a href="#自我介绍-别紧张-讲慢点-开录音-警惕面试官挖坑-大胆讲" class="headerlink" title="自我介绍 别紧张 讲慢点 开录音 警惕面试官挖坑 大胆讲"></a>自我介绍 别紧张 讲慢点 开录音 警惕面试官挖坑 大胆讲</h1><h1 id="自由发挥的问题"><a href="#自由发挥的问题" class="headerlink" title="自由发挥的问题"></a>自由发挥的问题</h1><h2 id="项目中遇到的困难"><a href="#项目中遇到的困难" class="headerlink" title="项目中遇到的困难"></a>项目中遇到的困难</h2><h2 id="职业规划"><a href="#职业规划" class="headerlink" title="职业规划"></a>职业规划</h2><h2 id="接受一个新事物能力如何"><a href="#接受一个新事物能力如何" class="headerlink" title="接受一个新事物能力如何"></a>接受一个新事物能力如何</h2><hr>
+<h1 id="系统设计题"><a href="#系统设计题" class="headerlink" title="系统设计题"></a>系统设计题</h1><h2 id="评论回复点赞如何设计"><a href="#评论回复点赞如何设计" class="headerlink" title="评论回复点赞如何设计"></a>评论回复点赞如何设计</h2><ul>
+<li><p>设计表，针对业务场景进行分析：</p>
+<ol>
+<li>需要查询出帖子下的所有评论</li>
+<li>需要查询出评论下的所有回复</li>
+<li>需要查询出回复的回复</li>
+<li>评论是否点赞标识，以及点赞数</li>
+</ol>
+<p>考虑到以上，思考设计出表结构即可。</p>
+</li>
+<li><p>大数据量场景</p>
+<ol>
+<li>点赞取消频繁（Redis缓存）</li>
+<li>频繁查询评论（ES）</li>
+<li>数据量过大（分表策略）</li>
+</ol>
+</li>
+</ul>
+<h2 id="高并发系统考点"><a href="#高并发系统考点" class="headerlink" title="高并发系统考点"></a>高并发系统考点</h2><p>如何应对突增的流量？（可预测流量与不可预测流量）</p>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><ul>
+<li><a href="https://www.cnblogs.com/jasonZh/p/9513948.html" target="_blank" rel="noopener">Redis 5种基本数据结构及常见使用场景</a><ul>
+<li>String<ol>
+<li>K-V 缓存</li>
+</ol>
+</li>
+<li>Hash<ol>
+<li>存储对象，部分数据变更</li>
+</ol>
+</li>
+<li>List-双向链表<ol>
+<li>消息队列</li>
+<li><a href="https://mp.weixin.qq.com/s/uzuz7rqctQ-bjdRcf1tO9g" target="_blank" rel="noopener">利用zipList来代替大量的K-V</a></li>
+<li>粉丝列表（非严格实时场景）</li>
+</ol>
+</li>
+<li>Set-HashTable<ol>
+<li>无序不重复集合</li>
+<li>共同关注</li>
+</ol>
+</li>
+<li>Zset-HashMap&amp;SkipList<ol>
+<li>有序不重复集合，并且带一个权重参数</li>
+<li>排行榜</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>Redis加锁，原子操作 EX | NX</li>
+</ul>
+<h4 id="缓存故障"><a href="#缓存故障" class="headerlink" title="缓存故障"></a>缓存故障</h4><ul>
+<li><p>缓存穿透：大量查询持久层中为空的值。</p>
+<ul>
+<li>把为空的值也放入缓存</li>
+</ul>
+</li>
+<li><p>缓存雪崩：某一个时间段，缓存集中过期失效</p>
+<ul>
+<li>设置随机过期时间</li>
+</ul>
+</li>
+<li><p>缓存击穿：热点Key失效的瞬间，直接并发访问持久层</p>
+<ul>
+<li>Key永不过期</li>
+</ul>
+</li>
+</ul>
+<h3 id="降级"><a href="#降级" class="headerlink" title="降级"></a>降级</h3><ul>
+<li>功能暂时下线</li>
+</ul>
+<h3 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h3><p>三种常见的限流算法：</p>
+<ul>
+<li>计数器算法：单个接口1分钟访问次数不能超过100。此算法可能在59秒到1分01秒内被访问200次</li>
+<li>滑动窗口算法：将时间分为多个格子，每个格子有独立的计数器</li>
+<li>令牌桶算法：所有请求在处理之前都需要拿到一个可用的令牌，根据限流大小，按一定速率往桶里添加令牌，桶设置最大的放置令牌限制，业务逻辑处理完后将令牌删除</li>
+<li>漏桶算法：水以任意速率流入，一定速率出水，超过桶容量就丢弃。</li>
+</ul>
+<h2 id="既然有-HTTP-请求，为什么还要用-RPC-调用？"><a href="#既然有-HTTP-请求，为什么还要用-RPC-调用？" class="headerlink" title="既然有 HTTP 请求，为什么还要用 RPC 调用？"></a>既然有 HTTP 请求，为什么还要用 RPC 调用？</h2><ul>
+<li>通用定义的http1.1协议的tcp报文包含太多废信息</li>
+<li>牺牲可读性提升效率、易用性是可取的</li>
+</ul>
+<h1 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h1><h2 id="O-logN-究竟是多少？"><a href="#O-logN-究竟是多少？" class="headerlink" title="O(logN)究竟是多少？"></a>O(logN)究竟是多少？</h2><p>为什么没有底数？</p>
+<p>由于log级别的时间复杂度都是使用了分治思想，这个底数直接由分治的复杂度决定，如果是二分法，底数就是2。无论底数是什么，log级别的渐进意义是一样的。高数中极限的思想。</p>
+<h2 id="递归和回溯的区别"><a href="#递归和回溯的区别" class="headerlink" title="递归和回溯的区别"></a>递归和回溯的区别</h2><p>递归可以理解为是函数自己调用自己，有一个终点。而回溯就是我们经常说DFS（深搜）的一种，特点是有回头路。</p>
+<h2 id="单调栈"><a href="#单调栈" class="headerlink" title="单调栈"></a>单调栈</h2><ul>
+<li><p>问题描述：蓄水问题，高度为 i 的方块能蓄多少水。例：[1，3，2，4，3，5]</p>
+</li>
+<li><p>将水池抽象为数组，维护一个单调递减的栈。对当前元素进行遍历，如果当前元素大于栈顶元素，则进行弹出（pop）操作，利用此时的栈顶元素进行蓄水容量计算（为什么可以？因为我们维护的是单调递减的栈，所以栈顶的元素减去弹出的元素一定大于等于0）。栈空或栈顶元素大于当前元素，进行一次入栈。</p>
+</li>
+<li><p>这个问题不用单调栈去解决更容易理解，这里还有两种值得学习的思想</p>
+<ul>
+<li><p>常规的一种思路是O(N^2)，遍历找出当前位置左边最高的（O(N)）和右边最高的（O(N)）。</p>
+<p>这种方法很好优化，我们可以利用备忘录记录一下。即用两个数组<code>Left</code>和 <code>Right</code>数组预先处理一下，记录 在下标为 i 时，左边最高的和右边最高的方块高度。</p>
+<p>此时时间复杂度为O(N)，空间复杂度为O(N)</p>
+</li>
+<li><p>还有一种做法比较不容易想到。对于这个数组，它的最大值假设为<code>arr[i]</code>，它的左边（0…i-1）是非严格单调递增的，它的右边是非严格单调递减的。我们可以找出这个最大值，分别遍历0…i-1 和 n…i+1。实时更新相对另一侧的最大值（中间的最大值我们已经固定了，我们只要固定旁边两侧的最大值。）并计算出积水量就好了。还有一种双指针做法与之类似。</p>
+</li>
+</ul>
+</li>
+<li><p>来LeetCode试试吧    <a href="https://leetcode-cn.com/problems/trapping-rain-water/" target="_blank" rel="noopener">Leetcode #接雨水</a></p>
+</li>
+</ul>
+<h2 id="Hash-链地址法"><a href="#Hash-链地址法" class="headerlink" title="Hash 链地址法"></a>Hash 链地址法</h2><ul>
+<li>问题描述：当两个不同的关键字求得的索引相同时，如何存储。是处理hash冲突的其中一种方法。</li>
+<li>将冲突的值，以链表的形式连起来。</li>
+<li>应用：PHP 数组底层实现</li>
+</ul>
+<h2 id="二叉查找树"><a href="#二叉查找树" class="headerlink" title="二叉查找树"></a>二叉查找树</h2><ul>
+<li>左子树不为空，左子树的值均小于根节点的值</li>
+<li>右子树不为空，右子树的值均大于根节点的值</li>
+<li>任意节点的左右子树均是二叉查找树</li>
+<li>没有值相等的节点</li>
+</ul>
+<p>中序遍历输出从小到大的顺序排序</p>
+<p>缺点：退化为有n个节点的线性链</p>
+<h2 id="平衡二叉查找树"><a href="#平衡二叉查找树" class="headerlink" title="平衡二叉查找树"></a>平衡二叉查找树</h2><ul>
+<li>平衡条件：左右子树高度差不超过1</li>
+<li>解决了二叉查找树的退化问题</li>
+</ul>
+<h2 id="B树"><a href="#B树" class="headerlink" title="B树"></a>B树</h2><ul>
+<li>非叶子结点最多只有M个儿子，M&gt;2</li>
+<li>根节点的儿子数 [2,M]</li>
+<li>除根节点外的非叶子节点的儿子数 [M/2,M]</li>
+<li>每个节点存放至少 [M/2-1]</li>
+<li>对于每个非叶子结点上的指针。P[1] 指向小于K[1]的子树，P[M]指向大于K[M]的子树。在两区间的P[i]指向属于 （K[i-1],K[i]）的子树</li>
+<li>所有叶子节点位于同一层</li>
+<li>关键字（值）=指针数-1</li>
+</ul>
+<p>图片转自CSDN<br><img src="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200312/b_tree.png" alt="B树-图片转自CSDN"></p>
+<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><ul>
+<li>非叶子节点的子树指针和关键字个数相同</li>
+<li>为所有叶子节点增加了一个链指针</li>
+<li>所有关键字都在叶子节点出现，用链表存，且是有序的</li>
+<li>非叶子节点只是叶子节点的索引，叶子节点是存储数据（关键字）的数据层</li>
+<li>更适合文件系统</li>
+<li>特点：查询效率更稳定，读写磁盘代价更低</li>
+</ul>
+<p>图片转自CSDN<br><img src="https://raw.githubusercontent.com/ajsonx/blog-IMG/master/20200312/b%2B_tree.png" alt="B+树-图片转自CSDN"></p>
+<p>B树在提高了IO性能的同时并没有解决元素遍历效率低下的问题，正是为了解决这个问题，B+树应用而生。B+树只需要去遍历叶子节点就可以实现整棵树的遍历。而且在数据库中基于范围的查询是非常频繁的，而B树不支持这样的操作或者说效率太低。</p>
+<h2 id="最短路"><a href="#最短路" class="headerlink" title="最短路"></a>最短路</h2><h3 id="Dijkstra"><a href="#Dijkstra" class="headerlink" title="Dijkstra"></a>Dijkstra</h3><ul>
+<li>贪心，不能处理负边</li>
+<li>维护一个<code>d[i]</code> ，表示起点到<code>i</code>的最短距离。初始化一个二维数组，表示有向图的路径长度，如果不存在通路则为无穷大。从起点开始选择一个最近的点<code>i</code>，然后将<code>i</code>作为中间点，更新到达的点<code>d[n]</code>值，不断贪心寻找。</li>
+</ul>
+<h3 id="Floyed"><a href="#Floyed" class="headerlink" title="Floyed"></a>Floyed</h3><ul>
+<li>多源最短路、能处理负边，但是不能出现负环。DP思想，时间复杂度：O(n3)</li>
+<li>枚举中间点，枚举起点，枚举终点。dp表记录最短路。</li>
+<li>状态转移方程：<code>d[i][j][k] = min( d[i][k][k-1] + d[k][j][k-1] ,d[i][j][k-1] )</code> </li>
+</ul>
+<h2 id="最小生成树"><a href="#最小生成树" class="headerlink" title="最小生成树"></a>最小生成树</h2><h3 id="Kruskal"><a href="#Kruskal" class="headerlink" title="Kruskal"></a>Kruskal</h3><ul>
+<li>贪心，不断加边</li>
+</ul>
+<h3 id="Prim"><a href="#Prim" class="headerlink" title="Prim"></a>Prim</h3><ul>
+<li>贪心，不断加点</li>
+</ul>
+<h2 id="DP"><a href="#DP" class="headerlink" title="DP"></a>DP</h2><p>Todo，不常考，了解DP思想即可（自底向上的解决问题）</p>
+<h1 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h1><h2 id="Mysql优化"><a href="#Mysql优化" class="headerlink" title="Mysql优化"></a>Mysql优化</h2><p><a href="https://www.zhihu.com/question/19719997/answer/549041957" target="_blank" rel="noopener">知乎回答，推荐前2</a></p>
+<ol>
+<li>选择合适的数据库引擎</li>
+<li>配置优化</li>
+<li>Sql优化</li>
+<li>索引优化</li>
+<li>读写分离</li>
+<li>表结构优化</li>
+<li>硬件升级</li>
+</ol>
+<h2 id="数据库隔离级别"><a href="#数据库隔离级别" class="headerlink" title="数据库隔离级别"></a>数据库隔离级别</h2><ol>
+<li>读未提交 RU</li>
+<li>读提交 RC</li>
+<li>可重复读 RR （MySQL默认级别）</li>
+<li>序列化 Serializable</li>
+</ol>
+<p>分别解决了 脏读，不可重复读，幻读。事务级别越高，性能越差。</p>
+<h2 id="什么是事务"><a href="#什么是事务" class="headerlink" title="什么是事务"></a>什么是事务</h2><p>事务是一个工作单元、包含了一组数据操作命令，要么都执行，要么都不执行。（结合实际工作去理解用事务的意义）</p>
+<h2 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h2><ul>
+<li>Atomicity原子性：一个事务中所有操作都必须全部完成，要么全部不完成。</li>
+<li>Consistency一致性：在事务开始或结束时，数据库应该在一致状态。</li>
+<li>Isolation隔离性：事务将假定只有它自己在操作数据库，彼此不知晓。</li>
+<li>Durability持久性：一旦事务完成，就不能返回。</li>
+</ul>
+<h2 id="MVCC是一种多版本并发控制机制"><a href="#MVCC是一种多版本并发控制机制" class="headerlink" title="MVCC是一种多版本并发控制机制"></a>MVCC是一种多版本并发控制机制</h2><h2 id="InnoDB和MyISAM区别"><a href="#InnoDB和MyISAM区别" class="headerlink" title="InnoDB和MyISAM区别"></a>InnoDB和MyISAM区别</h2><ul>
+<li>InnoDB<ul>
+<li>支持事务</li>
+<li>非主键索引的BTree节点存的是主键，需要根据主键二次查找相应的数据块。</li>
+<li>一般是行锁，加在索引上。</li>
+<li>读写之间可以并发，普通级别的select不需要锁（还有更新级别for update）。当查询的记录遇到锁时，用的是一致性的非锁定快照，读被锁定行的快照。其它更新或加锁读用的是当前读，读取原始行</li>
+</ul>
+</li>
+<li>MyISAM<ul>
+<li>不是事务安全的</li>
+<li>数据是顺序存储的，存储方式是非聚簇索引</li>
+<li>所有索引的BTree节点是一个指向数据物理位置的指针，所以不建立主键都行</li>
+<li>表锁，只有读读之间是并发的，写写是串行的</li>
+<li>读和写可以并发，需要设置<code>concurrent_insert</code> 参数</li>
+<li>写优先级高于读，会导致读请求饿死</li>
+</ul>
+</li>
+</ul>
+<h2 id="一条SQL执行的很慢的原因"><a href="#一条SQL执行的很慢的原因" class="headerlink" title="一条SQL执行的很慢的原因"></a>一条SQL执行的很慢的原因</h2><ul>
+<li>分两种情况：1.突然很慢 2.本来就慢</li>
+<li>redo-log 满了去同步到磁盘而繁忙</li>
+<li>拿不到锁。<code>show processlist</code> 查看当前状态</li>
+<li>索引失效</li>
+</ul>
+<h2 id="索引失效的原因"><a href="#索引失效的原因" class="headerlink" title="索引失效的原因"></a>索引失效的原因</h2><ul>
+<li>where子句中使用 <code>!=</code>或者<code>&lt;&gt;</code>操作符</li>
+<li>where子句中使用<code>or</code>来连接条件</li>
+<li>避免where子句中对字段进行表达式操作 where num/2 =100</li>
+<li>where子句中对字段进行mysql函数操作</li>
+<li>最左前缀原则</li>
+<li>列类型是字符串，一定要在条件中使用引号</li>
+<li>like的模糊查询以%开头</li>
+</ul>
+<p>###关于联合索引的特别提醒</p>
+<ul>
+<li>对于联合索引（a,b,c）来说，有效的索引查询分别是(a)，(a,b) ，(a,b,c) 联合索引在数据结构下相当于 Order By a b c</li>
+<li>对于查询语句来说，不管你where语句怎么写的，b写在前面，a在后面也没关系。MySQL会优化你的查询语句，依然会命中索引</li>
+<li>当表中的字段仅仅只有联合索引，没有其他的字段时，不管你怎么写都会命中索引。因为索引覆盖了。</li>
+</ul>
+<h2 id="IN-和-EXISTS的区别"><a href="#IN-和-EXISTS的区别" class="headerlink" title="IN 和 EXISTS的区别"></a>IN 和 EXISTS的区别</h2><ul>
+<li>IN：把外表和内表作hash连接（了解什么是hash join）</li>
+<li>EXISTS：对外表作loop循环，每次loop循环再对内表进行查询</li>
+<li>如果两表中一个较小，一个较大。则子查询表大的用EXISTS，子查询小的用IN。</li>
+<li>NOT IN 和 NOT EXISTS</li>
+<li>NOT IN：内外表都进行全表扫描</li>
+<li>NOT EXISTS：子查询依然能用到表上的索引</li>
+</ul>
+<h2 id="分表的策略"><a href="#分表的策略" class="headerlink" title="分表的策略"></a>分表的策略</h2><ul>
+<li>垂直和水平</li>
+<li>取模</li>
+<li>hash（crc32）</li>
+<li>一致性hash （就是一个环。如果hash环偏斜，所有请求打到同一台机器上，可以增加虚拟节点。）</li>
+</ul>
+<h2 id="分布式事务如何保证一致性"><a href="#分布式事务如何保证一致性" class="headerlink" title="分布式事务如何保证一致性"></a>分布式事务如何保证一致性</h2><ul>
+<li>2PC</li>
+<li>3PC</li>
+<li>TCC</li>
+<li>MQ，发布订阅</li>
+</ul>
+<h1 id="NOSQL"><a href="#NOSQL" class="headerlink" title="NOSQL"></a>NOSQL</h1><h2 id="MongoDB和Redis的区别"><a href="#MongoDB和Redis的区别" class="headerlink" title="MongoDB和Redis的区别"></a>MongoDB和Redis的区别</h2><h2 id="Redis的connect和pconnect"><a href="#Redis的connect和pconnect" class="headerlink" title="Redis的connect和pconnect"></a>Redis的connect和pconnect</h2><ul>
+<li>脚本结束之后连接释放</li>
+<li>脚本结束之后连接不释放，连接保持在php-fpm中</li>
+</ul>
+<h1 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h1><ul>
+<li>网关层</li>
+<li>业务逻辑层</li>
+<li>数据访问层</li>
+<li>DB</li>
+</ul>
+<p>了解各层的实现方式、实现工具，各层之间的调用方式。了解垂直拆分、水平拆分，了解各种中间件。内容过多，不在此赘述。/不常考</p>
+<h2 id="什么是注册中心，常见的注册中心组件"><a href="#什么是注册中心，常见的注册中心组件" class="headerlink" title="什么是注册中心，常见的注册中心组件"></a>什么是注册中心，常见的注册中心组件</h2><ul>
+<li><p><a href="https://www.jianshu.com/p/5014bb302c7d" target="_blank" rel="noopener">服务发现、服务注册</a></p>
+</li>
+<li><p>zookeeper（CP）追求数据的强一致性。</p>
+</li>
+<li><p>consul（AP）追求高可用与最终一致。</p>
+</li>
+</ul>
+<h2 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h2><p> 一致性、可用性、分区容错性</p>
+<h2 id="服务冗余"><a href="#服务冗余" class="headerlink" title="服务冗余"></a>服务冗余</h2><p>多机配置</p>
+<h2 id="无状态化"><a href="#无状态化" class="headerlink" title="无状态化"></a>无状态化</h2><p>应用服务可以不存储状态有关的值在自己内部。</p>
+<p>会话数据放在外部缓存、结构化数据保存在统一的数据库、文件图片通过CDN下发、非结构化数据（文本、评论），可以存在在统一的搜索引擎里面。保存在统一的服务，便于横向拓展</p>
+<h1 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h1><h2 id="设置防盗链"><a href="#设置防盗链" class="headerlink" title="设置防盗链"></a>设置防盗链</h2><ul>
+<li>valid_referers</li>
+</ul>
+<h2 id="正向代理和反向代理"><a href="#正向代理和反向代理" class="headerlink" title="正向代理和反向代理"></a>正向代理和反向代理</h2><ul>
+<li>VPN就是正向，使用者可以感知到</li>
+<li>Nginx等服务器就是反向，感受不到</li>
+</ul>
+<h2 id="Nginx与PHP通信两种方式"><a href="#Nginx与PHP通信两种方式" class="headerlink" title="Nginx与PHP通信两种方式"></a>Nginx与PHP通信两种方式</h2><ul>
+<li>unix socket</li>
+<li>tcp socket</li>
+</ul>
+<h1 id="HTTP-计算机网络"><a href="#HTTP-计算机网络" class="headerlink" title="HTTP/计算机网络"></a>HTTP/计算机网络</h1><h2 id="HTTP状态码"><a href="#HTTP状态码" class="headerlink" title="HTTP状态码"></a>HTTP状态码</h2><blockquote>
+<p>想想还是全写出来了，以后也方便查找。不过这东西问的频率也不高。</p>
+</blockquote>
+<ul>
+<li>100：客户端应重新发送初始请求</li>
+<li>101：改用另一个协议</li>
+<li>200：成功</li>
+<li>201：创建新资源成功</li>
+<li>202：请求稍后会被处理</li>
+<li>203：响应报头可能来自其他服务器</li>
+<li>204：服务器成功处理、但没有返回任何内容</li>
+<li>205：处理成功、客户端应该重置数据源</li>
+<li>206：partial content 处理了部分内容 用于大文件的断点续传</li>
+<li>300：若被请求的资源在服务器端存在多个表示，而服务器不知道客户端想要的是哪一个</li>
+<li>301：请求的页面已经永久跳转到新的URL</li>
+<li>302：临时移动</li>
+<li>303：查看其他位置</li>
+<li>304：未修改、 305 只能使用代理访问、307 临时重定向</li>
+<li>400：错误请求，服务器不理解</li>
+<li>401：未授权、403 服务器拒绝请求</li>
+<li>404：未找到、 405 禁用请求中的方法 406 不接受、407 需要代理授权 、408 请求超时…</li>
+<li>500：服务器内部错误、502 错误网关、 503 服务不可用、504 网关超时、 505 不支持版本</li>
+</ul>
+<h2 id="TCP与UDP"><a href="#TCP与UDP" class="headerlink" title="TCP与UDP"></a>TCP与UDP</h2><p>TCP通信就像打电话，双方通信之前需要建立连接、双方就位后方可开始会话；而UDP通信就像发短信，一方给另一方发送数据前，并不需要对方就位。</p>
+<ul>
+<li>TCP：可靠性、顺序性、高损耗</li>
+<li>UDP：不可靠、无序、低耗</li>
+</ul>
+<h2 id="TCP沾包解决方案"><a href="#TCP沾包解决方案" class="headerlink" title="TCP沾包解决方案"></a>TCP沾包解决方案</h2><ul>
+<li>报头添加消息类型和数据长度信息</li>
+<li>报尾添加结束分割符</li>
+</ul>
+<h2 id="用户输入-url-到页面显示经历了哪些"><a href="#用户输入-url-到页面显示经历了哪些" class="headerlink" title="用户输入 url 到页面显示经历了哪些"></a>用户输入 url 到页面显示经历了哪些</h2><ul>
+<li>通过DNS找到对应的IP<ul>
+<li>浏览器缓存</li>
+<li>本地的Host找对应的IP</li>
+<li>路由器缓存查找记录</li>
+<li>DNS域名解析</li>
+</ul>
+</li>
+<li>通过IP向对应的web服务器发送请求<ul>
+<li>如果是静态文件，Nginx服务器转发</li>
+<li>如果是php文件，则交由php-fpm处理</li>
+</ul>
+</li>
+</ul>
+<h2 id="OSI-7层模型"><a href="#OSI-7层模型" class="headerlink" title="OSI 7层模型"></a>OSI 7层模型</h2><blockquote>
+<p>已经没人问了</p>
+</blockquote>
+<ul>
+<li>物理层：</li>
+<li>数据链路层：</li>
+<li>网络层：IP、ICMP、ARP</li>
+<li>传输层：TCP、UDP</li>
+<li>会话层：SMTP、DNS</li>
+<li>表示层：Telnet</li>
+<li>应用层：HTTP、TFTP、FTP、NFS</li>
+</ul>
+<h1 id="PHP"><a href="#PHP" class="headerlink" title="PHP"></a>PHP</h1><h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><ul>
+<li>array_slice</li>
+<li>array_splice</li>
+<li>compact</li>
+<li>chunk_split</li>
+<li>addcslashes</li>
+<li>chr</li>
+</ul>
+<h2 id="PHP执行"><a href="#PHP执行" class="headerlink" title="PHP执行"></a>PHP执行</h2><ul>
+<li>编译为opcode</li>
+<li>Zend引擎处理转换为C指令</li>
+<li>C转换为汇编语言</li>
+<li>最后变成机器码执行</li>
+</ul>
+<p>针对这块问题的深入性探讨，<a href="http://gywbd.github.io/posts/2016/2/zend-execution-engine.html" target="_blank" rel="noopener">整理自Gong Yong的Blog-值得读</a>：</p>
+<ul>
+<li>什么是解释性语言？<ul>
+<li>所谓“解释型语言”就是指用这种语言写的程序不会被直接编译为本地机器语言（native machine language），而是会被编译为一种中间形式（代码），很显然这种中间形式不可能直接在CPU上执行（因为CPU只能执行本地机器指令），但是这种中间形式可以在使用本地机器指令（如今大多是使用C语言）编写的软件上执行。这个软件就是所谓的软件虚拟机（software virtual machine）。</li>
+<li>我们也可以这样去理解PHP是动态语言的其中的特点：运行时才确定数据类型的语言。<a href="https://www.zhihu.com/question/268303059" target="_blank" rel="noopener">但按解释型与编译型去区分语言是不准确的。</a></li>
+</ul>
+</li>
+<li>软件虚拟机又是什么？<ul>
+<li><strong>程序虚拟机</strong> 被设计用来在与平台无关的环境中执行计算机程序。</li>
+<li>所以我们可以跨平台（Linux，MacOS，Windows）的使用而不用担心环境问题（类似不同平台字节长度不同的问题）</li>
+</ul>
+</li>
+<li>为什么会编译为OPcode？<ul>
+<li>有了上述两点的基础知识，我们可以简单知道PHP的Zend虚拟机引擎就是一种程序虚拟机，将我们编写的PHP代码进行翻译。这里可以分为两大部分：1.编译栈  2.执行栈。我们假设Zend VM的一个OPCode对应虚拟机的一个底层操作。Zend虚拟机有很多OPCode：它们可以做很多事情。随着PHP的发展，也引入了越来越多的OPCode，这都是源于PHP可以做越来越多的事情。你可以在PHP的源代码文件Zend/zend_vm_opcodes.h中看到所有的OPCode。</li>
+</ul>
+</li>
+</ul>
+<p>综上，我们完整地理解了PHP到Zend引擎这块的详细内容。再接下去就是《计算机操作系统》的事情啦。</p>
+<h2 id="CGI、Fast-CGI、PHP-FPM"><a href="#CGI、Fast-CGI、PHP-FPM" class="headerlink" title="CGI、Fast-CGI、PHP-FPM"></a>CGI、Fast-CGI、PHP-FPM</h2><ul>
+<li>CGI 公共网关接口，是Nginx与PHP的协议，Fast-CGI是进程管理器</li>
+<li>传统的cgi协议在连接请求时，会开启一个进程进行处理，而FAST-CGI处理完请求后，不会kill掉这个进程，而是保留复用。</li>
+<li>php-fpm是管理php-cgi的进程管理器。在更改配置后，新的进程加载新的配置，实现平滑过度。</li>
+</ul>
+<h2 id="进制转换函数"><a href="#进制转换函数" class="headerlink" title="进制转换函数"></a>进制转换函数</h2><p>二进制 bin、八进制oct、十进制dec、十六进制hex</p>
+<h2 id="Array数组的底层实现"><a href="#Array数组的底层实现" class="headerlink" title="Array数组的底层实现"></a>Array数组的底层实现</h2><ul>
+<li>Hash Table</li>
+<li>链地址法</li>
+</ul>
+<h2 id="自动加载如何实现"><a href="#自动加载如何实现" class="headerlink" title="自动加载如何实现"></a>自动加载如何实现</h2><ul>
+<li><code>spl_autoload_register</code>:我们new一个不存在的类的时候会触发，进而可以解决类引入（include）</li>
+</ul>
+<h2 id="框架路由如何实现"><a href="#框架路由如何实现" class="headerlink" title="框架路由如何实现"></a>框架路由如何实现</h2><ul>
+<li><code>$_SERVER[&quot;PHP_SELF&quot;]=&gt;&quot;/index.php&quot;</code>定位入口文件 </li>
+<li>通过对 <code>$_SERVER[&quot;REQUEST_URI&quot;]=&gt;&quot;/article/get?id=1&quot;</code> 获取请求参数，然后<code>?,&amp;</code>切割参数</li>
+</ul>
+<h2 id="魔术方法"><a href="#魔术方法" class="headerlink" title="魔术方法"></a>魔术方法</h2><ul>
+<li><code>__get() __set()</code></li>
+<li><code>__call(),__callStatic()</code><ul>
+<li>调用不可访问或不存在的方法时被调用</li>
+</ul>
+</li>
+<li><code>__toString()</code></li>
+<li><code>__construct(),__destruct()</code></li>
+<li><code>__isset(),__unset()</code><ul>
+<li>对不可访问或不存在的属性调用<code>isset()</code>或<code>empty()</code>时被调用</li>
+<li>对不可访问或不存在的属性进行<code>unset</code>时被调用</li>
+</ul>
+</li>
+<li><code>__sleep(),__wakeup()</code><ul>
+<li>当使用serialize时被调用，当你不需要保存大对象的所有数据时很有用</li>
+<li>当使用unserialize时被调用，可用于做些对象的初始化操作</li>
+</ul>
+</li>
+<li><code>__invoke()</code> 当以函数方式调用对象时被调用</li>
+</ul>
+<h2 id="魔术常量"><a href="#魔术常量" class="headerlink" title="魔术常量"></a>魔术常量</h2><ul>
+<li><code>__FUNCTION__</code></li>
+<li><code>__METHOD__</code></li>
+<li><code>__CLASS__</code></li>
+<li><code>__FILE__</code></li>
+<li><code>__DIR__</code></li>
+<li><code>__LINE__当前行号</code></li>
+<li><code>__TRAIT__</code></li>
+<li><code>__NAMESPACE__</code></li>
+</ul>
+<h2 id="var-dump-1…9-输出什么"><a href="#var-dump-1…9-输出什么" class="headerlink" title="var_dump(1…9) 输出什么"></a>var_dump(1…9) 输出什么</h2><p>复习的时候看到鸟哥的微博，顺便转载进来了。<a href="https://www.laruence.com/2020/02/23/1990.html" target="_blank" rel="noopener">风雪之隅</a></p>
+<ul>
+<li><p>输出：10.9 </p>
+<ul>
+<li>被分成三个部分 <code>1.</code> + <code>.</code> + <code>.9</code>  </li>
+<li>最后变成 1 拼接 0.9 </li>
+</ul>
+</li>
+<li><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//...在PHP5.6之后是个新的操作符叫做Splat operator, 可以用来定义可变参数函数，或者解数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span>  <span class="title">foo</span><span class="params">($a, $b, $c)</span> </span>&#123;</span><br><span class="line">        var_dump($a + $b + $c);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">$parameters = <span class="keyword">array</span> (<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line"> </span><br><span class="line">foo(...$parameters);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h1 id="计算机系统"><a href="#计算机系统" class="headerlink" title="计算机系统"></a>计算机系统</h1><h2 id="进程、线程、协程"><a href="#进程、线程、协程" class="headerlink" title="进程、线程、协程"></a>进程、线程、协程</h2><ul>
+<li>进程是系统调度的一个独立单位</li>
+<li><strong>线程</strong>（英语：thread）是CPU调度和分配的基本单位。大部分情况下，它被包含在进程之中，是进程中的实际运作单位。线程可以看做轻量级的进程。</li>
+<li>每个进程都有独立的代码和数据空间（程序上下文），程序之间的切换会有较大的开销；同一类线程共享代码和数据空间，每个线程都有自己独立的运行栈和程序计数器（PC），线程之间切换的开销小。</li>
+<li>系统在运行的时候会为每个进程分配不同的内存空间；而对线程而言，除了CPU外，系统不会为线程分配内存（线程所使用的资源来自其所属进程的资源），线程组之间只能共享资源。</li>
+<li>没有线程的进程可以看做是单线程的，如果一个进程内有多个线程，则执行过程不是一条线的，而是多条线（线程）共同完成的；线程是进程的一部分</li>
+</ul>
+<h3 id="PHP为什么是单线程的？"><a href="#PHP为什么是单线程的？" class="headerlink" title="PHP为什么是单线程的？"></a>PHP为什么是单线程的？</h3><ul>
+<li><p>方便自上而下的去编辑/理解代码</p>
+</li>
+<li><blockquote>
+<p>虽然pthreads可以实现多线程，但这会造成PHP-FPM的不稳定,线程安全检查也会产生额外的开销,所以PHP的多线程扩展pthreads的作者也只是建议在cli命令行下使 用</p>
+</blockquote>
+</li>
+<li><p>多线程可能会引入其他问题：</p>
+<ul>
+<li>线程读写变量存在着同步问题，需要加锁</li>
+<li>锁粒度过大会存在性能问题。一个线程运行，其他线程都在等待，无法实现并行</li>
+<li>可能产生死锁</li>
+<li>某个线程崩溃，则整个进程崩溃</li>
+</ul>
+</li>
+<li><p>多进程更稳定</p>
+</li>
+</ul>
+<h3 id="PHP多进程同时读写一个文件"><a href="#PHP多进程同时读写一个文件" class="headerlink" title="PHP多进程同时读写一个文件"></a>PHP多进程同时读写一个文件</h3><ul>
+<li>flock 函数，可设置模式，但性能并不是很好，经常造成死锁<ul>
+<li>读共享锁</li>
+<li>写独占锁</li>
+<li>释放锁定</li>
+<li>锁定堵塞</li>
+</ul>
+</li>
+<li>版本号概念的解决方案：拷贝一份，记录修改时间，修改后与对比原文件更新时间。如果不一致则此期间被修改过</li>
+</ul>
+<h2 id="进程间通信-IPC"><a href="#进程间通信-IPC" class="headerlink" title="进程间通信(IPC)"></a>进程间通信(IPC)</h2><ul>
+<li>常用管道（短小、频率高，两进程之间通信）、</li>
+<li>Socket 套接字，主要使用TCP</li>
+<li>共享内存（庞大的数据，多进程通信，配合信号量使用）<ul>
+<li>管道是半双工的，两进程间使用（需要适当的访问权限，如父子），是特殊的文件</li>
+</ul>
+</li>
+<li>消息队列不常用</li>
+</ul>
+<h3 id="单工、半双工、全双工"><a href="#单工、半双工、全双工" class="headerlink" title="单工、半双工、全双工"></a>单工、半双工、全双工</h3><ul>
+<li>单工：只能单向传输数据。例：遥控</li>
+<li>半双工：可以沿两个方向传送，但一个信道同一时刻只能单向传输</li>
+<li>全双工：两边同时接受、传输数据。例：电话</li>
+</ul>
+<h2 id="并行、串行、并发、异步"><a href="#并行、串行、并发、异步" class="headerlink" title="并行、串行、并发、异步"></a>并行、串行、并发、异步</h2><ul>
+<li>串行：一次只能取得一个任务并执行一个</li>
+<li>并行：可以通过多进程/多线程的方式执行这些任务</li>
+<li>并发：并发是一种现象，同时运行多个程序或都个任务，任务可能是并行、也可能是串行执行，是操作系统进程调度和CPU上下文切换的结果</li>
+</ul>
+<h2 id="IO多路复用是什么"><a href="#IO多路复用是什么" class="headerlink" title="IO多路复用是什么"></a>IO多路复用是什么</h2><p>多路网络连接复用一个io线程。Linux——Epoll</p>
+<h2 id="INT占几个字节？"><a href="#INT占几个字节？" class="headerlink" title="INT占几个字节？"></a>INT占几个字节？</h2><ul>
+<li>C++在32位编译器下INT占4字节、LONG占4字节、FLOAT 4字节、DOUBLE 8字节、char 1字节</li>
+</ul>
+<h1 id="设计思想、设计模式"><a href="#设计思想、设计模式" class="headerlink" title="设计思想、设计模式"></a>设计思想、设计模式</h1><h2 id="MVC是什么"><a href="#MVC是什么" class="headerlink" title="MVC是什么"></a>MVC是什么</h2><blockquote>
+<p>基本没人问</p>
+</blockquote>
+<p>MVC是模型(model)－视图(view)－控制器(controller)的缩写，是一种设计模式。model层负责提供数据，和数据库有关的操作都交给模型层来处理，view层则提供交互的界面，并输出数据，而controller层则负责接收请求，并分发给相应的model来处理，然后调用view层来显示。</p>
+<h2 id="OOP面向对象编程"><a href="#OOP面向对象编程" class="headerlink" title="OOP面向对象编程"></a>OOP面向对象编程</h2><blockquote>
+<p>基本没人问</p>
+</blockquote>
+<ul>
+<li>将现实世界的事物抽象成对象，关系抽象成类、继承，帮助人们实现对现实世界的抽象与数字建模</li>
+<li>三大特性：封装、继承、多态</li>
+<li>五大基本原则：<ul>
+<li>单一指责原则（类的功能单一）</li>
+<li>开放封闭原则（对于拓展是开放的，对于修改是封闭的</li>
+<li>里氏替换原则（子类可以代替父类出现</li>
+<li>依赖倒置原则（高层次的模块不应该依赖与低层次的模块。具体实现应该依赖于抽象</li>
+<li>接口分离原则（采用多个接口比一个通用接口好</li>
+</ul>
+</li>
+</ul>
+<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><p>创建型、结构型、行为型</p>
+<ul>
+<li><p>单例、工厂</p>
+</li>
+<li><p>适配器：将一个类的接口转换成另外一个接口</p>
+</li>
+<li><p>中介者：用一个中介对象来封装一系列的对象交互，中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。</p>
+</li>
+</ul>
+<h1 id="网络安全"><a href="#网络安全" class="headerlink" title="网络安全"></a>网络安全</h1><blockquote>
+<p>看公司产品，如果有涉及到还是很有必要准备一下的。我准备的比较少</p>
+</blockquote>
+<h2 id="XSS（跨站脚本攻击）"><a href="#XSS（跨站脚本攻击）" class="headerlink" title="XSS（跨站脚本攻击）"></a>XSS（跨站脚本攻击）</h2><ul>
+<li>往Web页面里插入恶意Script代码，攻击用户</li>
+<li>反射型XSS，</li>
+<li>存储型XSS，往数据库里写代码</li>
+<li>HTTPONLY可以防止客户端从document读取cookie</li>
+<li>使用<code>htmlspecialchars()</code>函数</li>
+</ul>
+<h2 id="CSRF（跨站请求伪造）"><a href="#CSRF（跨站请求伪造）" class="headerlink" title="CSRF（跨站请求伪造）"></a>CSRF（跨站请求伪造）</h2><ul>
+<li>用户C访问受信任网站A、登陆后产生了cookie，用户未退出A网站之前，打开了网站B，网站B返回了攻击性代码，并在用户不知情的情况下利用cookie间接访问了A网站</li>
+<li>解决方案：验证码、检测Refer、利用Token</li>
+</ul>
+<h2 id="DDoS"><a href="#DDoS" class="headerlink" title="DDoS"></a>DDoS</h2><ul>
+<li>攻击者借助代理服务器生成指向目标系统的合法请求，造成服务器资源耗尽</li>
+<li>微信过年发红包就是一次人肉DDoS攻击</li>
+</ul>
+<h1 id="LINUX"><a href="#LINUX" class="headerlink" title="LINUX"></a>LINUX</h1><blockquote>
+<p>基本没人问，用到查</p>
+</blockquote>
+<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ul>
+<li>netstat</li>
+<li>w ：显示正在登录的用户</li>
+<li>cat /proc/meminfo 显示内存信息</li>
+<li>df -h 查看当前目录 </li>
+<li>df -h /usr/ 查看指定目录磁盘使用情况 </li>
+<li>du -sh /usr/ 计算文件夹大小</li>
+</ul>
+<h2 id="Top命令查看服务器状态的几个指标"><a href="#Top命令查看服务器状态的几个指标" class="headerlink" title="Top命令查看服务器状态的几个指标"></a>Top命令查看服务器状态的几个指标</h2><ul>
+<li>load average：1、5、15分钟内的服务器平均负载。<ul>
+<li>数值以CPU核数为准。多核处理器中，你的Load Average不应该高于处理器核心的总数量的70%。</li>
+<li>各家的公式不尽相同，但都是用于衡量正在使用CPU的进程数量和正在等待CPU的进程数量，一句话就是runnable processes的数量。</li>
+</ul>
+</li>
+<li>CPU usage: user,sys的百分比</li>
+<li>PhysMem：物理内存信息</li>
+</ul>
+<h1 id="反向面试"><a href="#反向面试" class="headerlink" title="反向面试"></a>反向面试</h1><p><a href="https://github.com/yifeikong/reverse-interview-zh" target="_blank" rel="noopener">这点同样重要</a></p>
+<ul>
+<li>进去以后我主要负责什么？</li>
+<li>能介绍一下团队情况吗？</li>
+<li>团队氛围如何？</li>
+<li>开发主要流程是怎样的？</li>
+<li>常用的技术栈？</li>
+</ul>
+<h1 id="小鹅通"><a href="#小鹅通" class="headerlink" title="小鹅通"></a>小鹅通</h1><ul>
+<li><p>冒泡排序变形、某一遍排序下，两两之间比较，没有调换过位置，我是否能理解为整体有序？</p>
+</li>
+<li><p>快排思想、左右指针、一边排序结果是怎样的</p>
+</li>
+<li><p>公司项目的问题、没有提出问题</p>
+</li>
+<li><p>数据库innodb和myams的差距、（数据结构上）</p>
+</li>
+<li><p>索引优化方案、只回答，他没深入考察</p>
+</li>
+<li><p>如何理解框架中的自动加载</p>
+</li>
+<li><p>命名空间解决了什么问题</p>
+</li>
+<li><p>有没有写过框架</p>
+</li>
+<li><p>进程线程协程的区别</p>
+</li>
+<li><p>session和cookie的区别</p>
+</li>
+<li><p>cookie中的用户token请求 负载打到不同的机子上，登陆态不同，你觉得是什么原因，如何解决</p>
+</li>
+<li><p>并发和并行的区别</p>
+</li>
+</ul>
+<h2 id="二"><a href="#二" class="headerlink" title="二"></a>二</h2><ul>
+<li>上台阶问题</li>
+<li>针对笔试题继续深入。SQL优化可以从（ES）服务解决</li>
+</ul>
+<blockquote>
+<p>然后面试官对我说，好我知道你的情况了。当我收到offer就知道他们挺缺人的。因为我对自己的表现也不是很满意，这是第一次裸面。</p>
+</blockquote>
+<h1 id="深信服"><a href="#深信服" class="headerlink" title="深信服"></a>深信服</h1><ul>
+<li><p>进程与线程的区别</p>
+</li>
+<li><p>进程间通信的几种方式</p>
+</li>
+<li><p>进程生存周期的5个阶段（创建、销毁）</p>
+</li>
+<li><p>HTTP状态码504是什么</p>
+</li>
+<li><p>Session和Cookie的区别</p>
+</li>
+<li><p>SSO思路</p>
+</li>
+<li><p>PHP数组相加和数组合并的区别</p>
+</li>
+<li><p>PHP数组取前十个的操作</p>
+</li>
+<li><p>PHP一个数组中插入另一个数组</p>
+</li>
+<li><p>找出一个数组中的在另一个数组是否重复，O(2n)</p>
+</li>
+<li><p>常见数据库引擎，以及之间的特点、差别</p>
+</li>
+<li><p>常见的几种索引</p>
+</li>
+<li><p>什么字段适合建立索引，什么字段不适合</p>
+</li>
+<li><p>索引未匹配到的原因</p>
+</li>
+<li><p>二分查找复杂度</p>
+</li>
+<li><p>职业规划</p>
+</li>
+</ul>
+<h2 id="二-1"><a href="#二-1" class="headerlink" title="二"></a>二</h2><ul>
+<li>没怎么问问题，对着项目随便聊了聊，这个就看个人发挥了，不要太紧张。主要是想看你是什么样的人。</li>
+</ul>
+<h2 id="三"><a href="#三" class="headerlink" title="三"></a>三</h2><ul>
+<li>HR面，同上。</li>
+</ul>
+<blockquote>
+<p>目前是池里一只鱼，等待打捞</p>
+</blockquote>
+<h1 id="反思总结"><a href="#反思总结" class="headerlink" title="反思总结"></a>反思总结</h1><ul>
+<li>表达能力需要不断提升</li>
+<li>面试的过程需要懂得察言观色</li>
+<li>注意每一个细节都会成为被筛掉的可能</li>
+<li>世纪难题——我为了什么而活？</li>
+</ul>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ul>
+<li><a href="https://segmentfault.com/a/1190000020189975" target="_blank" rel="noopener">头条面经</a></li>
+<li><a href="https://www.v2ex.com/t/478824" target="_blank" rel="noopener">v2老哥的面试经验-值得看</a></li>
+<li><a href="https://www.cnblogs.com/jasonZh/p/9513948.html" target="_blank" rel="noopener">Redis数据结构及应用场景</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>hjx
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://ajsonx.github.io/2020/03/12/first-year-interview/" title="一年经验的PHP程序员面试准备以及面筋">http://ajsonx.github.io/2020/03/12/first-year-interview/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PHP-Mysql-Algorithm/" rel="tag"># PHP Mysql Algorithm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/15/mysql-grouping-sorting/" rel="prev" title="MySQL分组排序引发的问题">
+      <i class="fa fa-chevron-left"></i> MySQL分组排序引发的问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/21/php-zval/" rel="next" title="PHP7中zval的实现">
+      PHP7中zval的实现 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#自我介绍-别紧张-讲慢点-开录音-警惕面试官挖坑-大胆讲"><span class="nav-number">1.</span> <span class="nav-text">自我介绍 别紧张 讲慢点 开录音 警惕面试官挖坑 大胆讲</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自由发挥的问题"><span class="nav-number">2.</span> <span class="nav-text">自由发挥的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#项目中遇到的困难"><span class="nav-number">2.1.</span> <span class="nav-text">项目中遇到的困难</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#职业规划"><span class="nav-number">2.2.</span> <span class="nav-text">职业规划</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接受一个新事物能力如何"><span class="nav-number">2.3.</span> <span class="nav-text">接受一个新事物能力如何</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#系统设计题"><span class="nav-number">3.</span> <span class="nav-text">系统设计题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#评论回复点赞如何设计"><span class="nav-number">3.1.</span> <span class="nav-text">评论回复点赞如何设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高并发系统考点"><span class="nav-number">3.2.</span> <span class="nav-text">高并发系统考点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存"><span class="nav-number">3.2.1.</span> <span class="nav-text">缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存故障"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">缓存故障</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#降级"><span class="nav-number">3.2.2.</span> <span class="nav-text">降级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#限流"><span class="nav-number">3.2.3.</span> <span class="nav-text">限流</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#既然有-HTTP-请求，为什么还要用-RPC-调用？"><span class="nav-number">3.3.</span> <span class="nav-text">既然有 HTTP 请求，为什么还要用 RPC 调用？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#算法"><span class="nav-number">4.</span> <span class="nav-text">算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#O-logN-究竟是多少？"><span class="nav-number">4.1.</span> <span class="nav-text">O(logN)究竟是多少？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#递归和回溯的区别"><span class="nav-number">4.2.</span> <span class="nav-text">递归和回溯的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单调栈"><span class="nav-number">4.3.</span> <span class="nav-text">单调栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-链地址法"><span class="nav-number">4.4.</span> <span class="nav-text">Hash 链地址法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二叉查找树"><span class="nav-number">4.5.</span> <span class="nav-text">二叉查找树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#平衡二叉查找树"><span class="nav-number">4.6.</span> <span class="nav-text">平衡二叉查找树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B树"><span class="nav-number">4.7.</span> <span class="nav-text">B树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-树"><span class="nav-number">4.8.</span> <span class="nav-text">B+树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最短路"><span class="nav-number">4.9.</span> <span class="nav-text">最短路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dijkstra"><span class="nav-number">4.9.1.</span> <span class="nav-text">Dijkstra</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Floyed"><span class="nav-number">4.9.2.</span> <span class="nav-text">Floyed</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小生成树"><span class="nav-number">4.10.</span> <span class="nav-text">最小生成树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kruskal"><span class="nav-number">4.10.1.</span> <span class="nav-text">Kruskal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Prim"><span class="nav-number">4.10.2.</span> <span class="nav-text">Prim</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DP"><span class="nav-number">4.11.</span> <span class="nav-text">DP</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MySQL"><span class="nav-number">5.</span> <span class="nav-text">MySQL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql优化"><span class="nav-number">5.1.</span> <span class="nav-text">Mysql优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库隔离级别"><span class="nav-number">5.2.</span> <span class="nav-text">数据库隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是事务"><span class="nav-number">5.3.</span> <span class="nav-text">什么是事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ACID"><span class="nav-number">5.4.</span> <span class="nav-text">ACID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MVCC是一种多版本并发控制机制"><span class="nav-number">5.5.</span> <span class="nav-text">MVCC是一种多版本并发控制机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#InnoDB和MyISAM区别"><span class="nav-number">5.6.</span> <span class="nav-text">InnoDB和MyISAM区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一条SQL执行的很慢的原因"><span class="nav-number">5.7.</span> <span class="nav-text">一条SQL执行的很慢的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引失效的原因"><span class="nav-number">5.8.</span> <span class="nav-text">索引失效的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IN-和-EXISTS的区别"><span class="nav-number">5.9.</span> <span class="nav-text">IN 和 EXISTS的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分表的策略"><span class="nav-number">5.10.</span> <span class="nav-text">分表的策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分布式事务如何保证一致性"><span class="nav-number">5.11.</span> <span class="nav-text">分布式事务如何保证一致性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NOSQL"><span class="nav-number">6.</span> <span class="nav-text">NOSQL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MongoDB和Redis的区别"><span class="nav-number">6.1.</span> <span class="nav-text">MongoDB和Redis的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis的connect和pconnect"><span class="nav-number">6.2.</span> <span class="nav-text">Redis的connect和pconnect</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#架构"><span class="nav-number">7.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是注册中心，常见的注册中心组件"><span class="nav-number">7.1.</span> <span class="nav-text">什么是注册中心，常见的注册中心组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP"><span class="nav-number">7.2.</span> <span class="nav-text">CAP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务冗余"><span class="nav-number">7.3.</span> <span class="nav-text">服务冗余</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无状态化"><span class="nav-number">7.4.</span> <span class="nav-text">无状态化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Nginx"><span class="nav-number">8.</span> <span class="nav-text">Nginx</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#设置防盗链"><span class="nav-number">8.1.</span> <span class="nav-text">设置防盗链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正向代理和反向代理"><span class="nav-number">8.2.</span> <span class="nav-text">正向代理和反向代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx与PHP通信两种方式"><span class="nav-number">8.3.</span> <span class="nav-text">Nginx与PHP通信两种方式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP-计算机网络"><span class="nav-number">9.</span> <span class="nav-text">HTTP/计算机网络</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP状态码"><span class="nav-number">9.1.</span> <span class="nav-text">HTTP状态码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP与UDP"><span class="nav-number">9.2.</span> <span class="nav-text">TCP与UDP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP沾包解决方案"><span class="nav-number">9.3.</span> <span class="nav-text">TCP沾包解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户输入-url-到页面显示经历了哪些"><span class="nav-number">9.4.</span> <span class="nav-text">用户输入 url 到页面显示经历了哪些</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OSI-7层模型"><span class="nav-number">9.5.</span> <span class="nav-text">OSI 7层模型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PHP"><span class="nav-number">10.</span> <span class="nav-text">PHP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数"><span class="nav-number">10.1.</span> <span class="nav-text">函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP执行"><span class="nav-number">10.2.</span> <span class="nav-text">PHP执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CGI、Fast-CGI、PHP-FPM"><span class="nav-number">10.3.</span> <span class="nav-text">CGI、Fast-CGI、PHP-FPM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进制转换函数"><span class="nav-number">10.4.</span> <span class="nav-text">进制转换函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Array数组的底层实现"><span class="nav-number">10.5.</span> <span class="nav-text">Array数组的底层实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自动加载如何实现"><span class="nav-number">10.6.</span> <span class="nav-text">自动加载如何实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#框架路由如何实现"><span class="nav-number">10.7.</span> <span class="nav-text">框架路由如何实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#魔术方法"><span class="nav-number">10.8.</span> <span class="nav-text">魔术方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#魔术常量"><span class="nav-number">10.9.</span> <span class="nav-text">魔术常量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#var-dump-1…9-输出什么"><span class="nav-number">10.10.</span> <span class="nav-text">var_dump(1…9) 输出什么</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#计算机系统"><span class="nav-number">11.</span> <span class="nav-text">计算机系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程、线程、协程"><span class="nav-number">11.1.</span> <span class="nav-text">进程、线程、协程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP为什么是单线程的？"><span class="nav-number">11.1.1.</span> <span class="nav-text">PHP为什么是单线程的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP多进程同时读写一个文件"><span class="nav-number">11.1.2.</span> <span class="nav-text">PHP多进程同时读写一个文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程间通信-IPC"><span class="nav-number">11.2.</span> <span class="nav-text">进程间通信(IPC)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单工、半双工、全双工"><span class="nav-number">11.2.1.</span> <span class="nav-text">单工、半双工、全双工</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并行、串行、并发、异步"><span class="nav-number">11.3.</span> <span class="nav-text">并行、串行、并发、异步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IO多路复用是什么"><span class="nav-number">11.4.</span> <span class="nav-text">IO多路复用是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#INT占几个字节？"><span class="nav-number">11.5.</span> <span class="nav-text">INT占几个字节？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#设计思想、设计模式"><span class="nav-number">12.</span> <span class="nav-text">设计思想、设计模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MVC是什么"><span class="nav-number">12.1.</span> <span class="nav-text">MVC是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOP面向对象编程"><span class="nav-number">12.2.</span> <span class="nav-text">OOP面向对象编程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设计模式"><span class="nav-number">12.3.</span> <span class="nav-text">设计模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络安全"><span class="nav-number">13.</span> <span class="nav-text">网络安全</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#XSS（跨站脚本攻击）"><span class="nav-number">13.1.</span> <span class="nav-text">XSS（跨站脚本攻击）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSRF（跨站请求伪造）"><span class="nav-number">13.2.</span> <span class="nav-text">CSRF（跨站请求伪造）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DDoS"><span class="nav-number">13.3.</span> <span class="nav-text">DDoS</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LINUX"><span class="nav-number">14.</span> <span class="nav-text">LINUX</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#常用命令"><span class="nav-number">14.1.</span> <span class="nav-text">常用命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Top命令查看服务器状态的几个指标"><span class="nav-number">14.2.</span> <span class="nav-text">Top命令查看服务器状态的几个指标</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#反向面试"><span class="nav-number">15.</span> <span class="nav-text">反向面试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#小鹅通"><span class="nav-number">16.</span> <span class="nav-text">小鹅通</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#二"><span class="nav-number">16.1.</span> <span class="nav-text">二</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#深信服"><span class="nav-number">17.</span> <span class="nav-text">深信服</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#二-1"><span class="nav-number">17.1.</span> <span class="nav-text">二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三"><span class="nav-number">17.2.</span> <span class="nav-text">三</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#反思总结"><span class="nav-number">18.</span> <span class="nav-text">反思总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">19.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hjx"
+      src="/images/ZHJ.jpeg">
+  <p class="site-author-name" itemprop="name">hjx</p>
+  <div class="site-description" itemprop="description">this is life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ajsonx" title="GitHub → https://github.com/ajsonx" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/3048029753" title="Weibo → https://weibo.com/u/3048029753" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://leetcode-cn.com/u/ajsonx/" title="LeetCode → https://leetcode-cn.com/u/ajsonx/" rel="noopener" target="_blank"><i class="fa fa-fw fa-google"></i>LeetCode</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hjx</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">63k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"6HOxK48nThiBkonQlv0wIUsv-gzGzoHsz","app_key":"BcHdElACUBQrLEVk5W6qA5j7","server_url":"https://6hoxk48n.lc-cn-n1-shared.com","security":true,"betterPerformance":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '3YThLBiNV4FfH33JfBpyQx0b-gzGzoHsz',
+      appKey     : '6gV2YAlDnuLF5nAfXkjA0Ic3',
+      placeholder: "官人，快来评论呀♂(≧▽≦)♂",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+  
+     <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas>
+     <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script>
+     <script type="text/javascript" src="/js/fireworks.js"></script>
+  
+</body>
+</html>
